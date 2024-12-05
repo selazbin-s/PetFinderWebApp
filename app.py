@@ -30,8 +30,12 @@ def index():
 
     else:
         tasks = Todo.query.order_by(Todo.date_created).all()
-        return render_template('index.html', tasks=tasks)
+        return render_template('finalindex.html')
     
+@app.route('/quiz/', methods=['GET', 'POST'])
+def quiz():
+    return render_template('quiz.html')
+
 @app.route('/delete/<int:id>')
 def delete(id):
     task_to_delete = Todo.query.get_or_404(id)
