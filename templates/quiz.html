@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz</title>
+    <title>PurrfectMatch Quiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
@@ -12,8 +12,8 @@
         <h1 class="text-xl font-bold">PurrfectMatch</h1>
         <ul class="flex space-x-6">
             <li><a href="{{ url_for('index') }}" class="hover:underline">Home</a></li>
-            <li><a href="{{ url_for('quiz') }}" class="hover:underline">Find Your Match</a></li>
-            <li><a href="#" class="hover:underline">Browse Pets</a></li>
+            <li><a href="{{ url_for('quiz', question_id=1) }}" class="hover:underline">Find Your Match</a></li>
+            <li><a href="{{ url_for('browse') }}" class="hover:underline">Browse Pets</a></li>
             <li><a href="#" class="hover:underline">Pet Care Guide</a></li>
             <li><a href="#" class="hover:underline">About Us</a></li>
         </ul>
@@ -22,6 +22,51 @@
         </button>
     </nav>
 
+    <!--Quiz Section-->
+    <section class="mx-auto mt-8 p-4 px-32 max-w-6xl">
+        <h2 class="text-2xl font-bold mb-4">PurrfectMatch Quiz</h2>
+        <p class="mb-6 text-lg">
+            <strong>{{ question['question'] }}</strong>
+        </p>
+
+        <form method="POST" class="space-y-4">
+            <!-- Display options -->
+            {% for option in question['options'] %}
+            <label class="block bg-white border rounded-lg p-4 shadow hover:shadow-lg cursor-pointer">
+                <!-- Add 'peer' to the input -->
+                <input type="radio" name="option" value="{{ option['id'] }}" class="hidden peer">
+                <span class="peer-checked:text-blue-500 peer-checked:font-black block rounded-lg p-2">
+                    {{ option['option'] }}
+                </span>
+            </label>
+            {% endfor %}
+
+            <!-- Previous and Next Buttons -->
+            <div class="space-x-4">
+                {% if question['id'] > 1 %}
+                <a href="{{ url_for('quiz', question_id=question['id'] - 1) }}" 
+                   class="bg-gray-300 text-gray-800 px-6 py-3 rounded shadow hover:bg-gray-400">
+                    Previous Question
+                </a>
+                {% endif %}
+        
+                {% if question['id'] == total %}
+                <button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-600">
+                    Submit
+                </button>
+                {% else %}
+                <button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-600">
+                    Next Question
+                </button>
+                {% endif %}
+            </div>
+
+        </form>
+
+        <div class="mt-6">
+            <p>Question {{ question['id'] }} of {{ total }}</p>
+        </div>
+    </section>
 
 </body>
 </html>
