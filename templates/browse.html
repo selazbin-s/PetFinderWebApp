@@ -13,7 +13,7 @@
         <ul class="flex space-x-6">
             <li><a href="{{ url_for('index') }}" class="hover:underline">Home</a></li>
             <li><a href="{{ url_for('quiz', question_id=1) }}" class="hover:underline">Find Your Match</a></li>
-            <li><a href="{{ url_for('browse') }}" class="hover:underline">Browse Pets</a></li>
+            <!-- <li><a href="{{ url_for('browse') }}" class="hover:underline">Browse Pets</a></li> -->
             <li><a href="#" class="hover:underline">Pet Care Guide</a></li>
             <li><a href="#" class="hover:underline">About Us</a></li>
         </ul>
@@ -21,7 +21,7 @@
             Login
         </button>
     </nav>
-
+ 
     <!-- Page Title -->
     <div class="px-8 py-6">
         <h1 class="text-4xl font-bold text-center md:text-left">Browse Pets</h1>
@@ -31,7 +31,7 @@
         <!-- Sidebar Filters -->
         <div class="w-full md:w-1/3 p-6 bg-gray-50 rounded-lg shadow-md">
             <h2 class="text-xl font-bold mb-4">Filter by:</h2>
-            <form method="GET" action="/browse" class="space-y-4">
+            <!-- <form method="GET" action="/browse" class="space-y-4">
                 <div>
                     <label for="species" class="block font-medium mb-1">Species:</label>
                     <select name="species" id="species" class="w-full border border-gray-300 rounded p-2">
@@ -59,7 +59,7 @@
                 <button type="submit" class="w-full bg-blue-500 text-white rounded p-2 mt-4 hover:bg-blue-600">
                     Apply Filters
                 </button>
-            </form>
+            </form> -->
         </div>
 
         <!-- Main Pet Content -->
