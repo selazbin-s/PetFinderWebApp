@@ -21,7 +21,6 @@
             Login
         </button>
     </nav>
-
      <!-- Results -->
   <div class="max-w-7xl mx-auto mt-8 px-4">
     <!-- PurrfectMatch Result -->
@@ -115,5 +114,19 @@
 
    <div class = "h-12">
    </div>
+    <h1>Recommended Pet: {{ recommended_pet }}</h1>
+    <h2>Matching Pets from API:</h2>
+    <ul>
+        {% for pet in pets %}
+        <li>
+            <strong>Name:</strong> {{ pet.name }}<br>
+            <strong>Breed:</strong> {{ pet.breed }}<br>
+            <strong>Age:</strong> {{ pet.age }}<br>
+            <strong>Location:</strong> {{ pet.location }}<br>
+            <strong>Description:</strong> {{ pet.description }}<br><br>
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('index') }}">Go Back Home</a>
 </body>
 </html>
