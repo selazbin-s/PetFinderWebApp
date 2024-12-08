@@ -1,9 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center px-32 py-4 border-b border-gray-200">
+        <h1 class="text-xl font-bold">PurrfectMatch</h1>
+        <ul class="flex space-x-6">
+            <li><a href="{{ url_for('index') }}" class="hover:underline">Home</a></li>
+            <li><a href="{{ url_for('quiz', question_id=1) }}" class="hover:underline">Find Your Match</a></li>
+            <li><a href="{{ url_for('browse') }}" class="hover:underline">Browse Pets</a></li>
+            <li><a href="#" class="hover:underline">Pet Care Guide</a></li>
+            <li><a href="#" class="hover:underline">About Us</a></li>
+        </ul>
+        <button class="border border-gray-800 rounded-lg px-4 py-2 hover:bg-gray-100">
+            Login
+        </button>
+    </nav>
+
     <h1>Recommended Pet: {{ recommended_pet }}</h1>
     <h2>Matching Pets from API:</h2>
     <ul>

@@ -21,9 +21,6 @@ prolog.assertz("suitable_pet(fish) :- favorite_pet(fish)")
 prolog.assertz("suitable_pet(other) :- favorite_pet(other)")
 
 # Example Questions for the Quiz
-# 1: Favorite pet
-# 2: Living situation
-# 3: Zip Code
 QUESTIONS = [
     {'id': 1, 'question': 'What is your favorite pet?',
      'options': [
@@ -32,7 +29,7 @@ QUESTIONS = [
         {'id': 3, 'option': 'Fish'},
         {'id': 4, 'option': 'Other'}
     ]},
-    {'id': 2, 'question': 'Where do you live?',
+    {'id': 2, 'question': 'Where do you live?', 
      'options': [
         {'id': 1, 'option': 'Apartment'},
         {'id': 2, 'option': 'House with Yard'},
@@ -48,6 +45,7 @@ class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(200), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
     def __repr__(self):
         return '<Task %r>' % self.id
 
@@ -56,23 +54,26 @@ def index():
     if request.method == 'POST':
         task_content = request.form['content']
         new_task = Todo(content=task_content)
+
         try:
             db.session.add(new_task)
             db.session.commit()
-            return redirect(url_for('index'))
+            return redirect('/')
         except:
             return 'There was an issue adding your task'
+
     else:
         tasks = Todo.query.order_by(Todo.date_created).all()
-        return render_template('index.html', tasks=tasks)
-
+        return render_template('index.html')
+    
 @app.route('/quiz/<int:question_id>', methods=['GET', 'POST'])
 def quiz(question_id):
+    #Get the current question
     current_question = next((q for q in QUESTIONS if q['id'] == question_id), None)
     if not current_question:
-        # No more questions, go to results
+        # If there are no more questions, then just return quiz results
         return redirect(url_for('results'))
-
+    
     if request.method == 'POST':
         # If current_question has options, user selects one.
         # If not (like for the zip code), user will enter a text input.
@@ -129,6 +130,38 @@ def results():
 
     return render_template('results.html', recommended_pet=pet_type, pets=pets)
 
+@app.route('/browse', methods=['GET'])
+def browse():
+    # Example data
+    species_list = ['Dog', 'Cat', 'Rabbit']
+    breed_list = ['Labrador', 'Siamese', 'Rex']
+    age_list = ['Puppy', 'Kitten', 'Adult']
+    
+    # Capture filter parameters
+    selected_species = request.args.get('species')
+    selected_breed = request.args.get('breed')
+    selected_age = request.args.get('age')
+    
+    # Placeholder: filter logic (e.g., querying database)
+    filtered_pets = []  # Example: apply filters to fetch pets
+    
+    return render_template('browse.html', 
+                           species_list=species_list,
+                           breed_list=breed_list,
+                           age_list=age_list,
+                           pets=filtered_pets)
+
+# Will Implement later when we have dataset avaiable
+# @app.route('/pet/<int:pet_id>')
+# def pet_profile(pet_id):
+#     # Placeholder: fetch pet details from database
+#     pet = {'id': pet_id, 'name': 'Max', 'species': 'Dog', 'breed': 'Labrador', 'age': 'Puppy'}
+#     return render_template('pet_profile.html', pet=pet)
+
+@app.route('/pet')
+def profile():
+    return render_template('profile.html')
+
 def query_pets_from_api(zipcode):
     url = "https://api.rescuegroups.org/v5/public/animals/search/available/haspic"
     headers = {
@@ -166,7 +199,7 @@ def query_pets_from_api(zipcode):
             'breed': attributes.get('breedPrimary', 'Unknown breed'),
             'age': attributes.get('ageGroup', 'Unknown age'),
             'foundPostalcode': attributes.get('foundPostalcode', 'Unknown location'),
-            'description': attributes.get('descriptionText', 'No description available')
+            'description': attributes.get('descriptionHtml', 'No description available')
         })
 
     return pets
