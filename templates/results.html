@@ -28,12 +28,14 @@
     <section class="bg-gray-200 p-6 rounded-lg shadow-md">
       <h2 class="text-2xl font-bold mb-4">Your Purrfect Match is....</h2>
       <div class="flex items-start space-x-4">
-        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba" class="w-48 h-48 object-cover rounded-md">
+        <img src="{{ first_pet.image_url }}" alt="Your Purrfect Match" class="w-64 h-64 object-cover rounded-md">
         <div>
-          <h3 class="text-3xl font-bold">Boba</h3>
-          <p class="text-gray-700">Adult | Male</p>
-          <p class="text-gray-700">Golden Retriever</p>
-          <p class="text-gray-700 mb-8">1 mile away</p>
+          <h3 class="text-3xl font-bold"> {{ first_pet.name }} </h3>
+          <p class="text-gray-700"> {{ first_pet.age }} | {{ first_pet.gender }} </p>
+          <p class="text-gray-700"> {{ first_pet.breed }} </p>
+          <p class="text-gray-700 mb-4"> {{ first_pet.location }} </p>
+
+          <p class="text-gray-700 mb-8"> {{ first_pet.description }} </p>
 
           <a href="{{ url_for('profile') }}" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-600">
             View Profile
@@ -42,91 +44,26 @@
     
       </div>
     </section>
-
+  
     <!-- Other Recommendations -->
-    <section class="mt-8">
-        <h2 class="text-2xl font-bold mb-4">Other Recommendations:</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-          <!-- Card 1 -->
-          <a href="{{ url_for('profile', pet_id='Boba') }}" class="border rounded-lg shadow-md bg-white overflow-hidden w-full text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-            <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-            <div class="p-4">
-              <h3 class="text-lg font-bold">Boba</h3>
-              <p class="text-sm text-gray-600">
-                Adult | Male<br>
-                Golden Retriever<br>
-                1 mile away
-              </p>
-            </div>
-            <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-              ❤️
-            </button>
-          </a>
-      
-          <!-- Duplicate other cards similarly -->
-          <a href="{{ url_for('profile', pet_id='Boba') }}" class="border rounded-lg shadow-md bg-white overflow-hidden w-full text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-            <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-            <div class="p-4">
-              <h3 class="text-lg font-bold">Boba</h3>
-              <p class="text-sm text-gray-600">
-                Adult | Male<br>
-                Golden Retriever<br>
-                1 mile away
-              </p>
-            </div>
-            <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-              ❤️
-            </button>
-          </a>
-
-          <a href="{{ url_for('profile', pet_id='Boba') }}" class="border rounded-lg shadow-md bg-white overflow-hidden w-full text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-            <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-            <div class="p-4">
-              <h3 class="text-lg font-bold">Boba</h3>
-              <p class="text-sm text-gray-600">
-                Adult | Male<br>
-                Golden Retriever<br>
-                1 mile away
-              </p>
-            </div>
-            <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-              ❤️
-            </button>
-          </a>
-
-          <a href="{{ url_for('profile', pet_id='Boba') }}" class="border rounded-lg shadow-md bg-white overflow-hidden w-full text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-            <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-            <div class="p-4">
-              <h3 class="text-lg font-bold">Boba</h3>
-              <p class="text-sm text-gray-600">
-                Adult | Male<br>
-                Golden Retriever<br>
-                1 mile away
-              </p>
-            </div>
-            <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-              ❤️
-            </button>
-          </a>
-        </div>
-      </section>
-      
-
-   <div class = "h-12">
-   </div>
-    <h1>Recommended Pet: {{ recommended_pet }}</h1>
-    <h2>Matching Pets from API:</h2>
-    <ul>
+    <h2 class="text-2xl font-bold mt-8 mb-4">Other Recommendations:</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {% for pet in pets %}
-        <li>
-            <strong>Name:</strong> {{ pet.name }}<br>
-            <strong>Breed:</strong> {{ pet.breed }}<br>
-            <strong>Age:</strong> {{ pet.age }}<br>
-            <strong>Location:</strong> {{ pet.location }}<br>
-            <strong>Description:</strong> {{ pet.description }}<br><br>
-        </li>
+          <a href="{{ url_for('profile', pet_id='Boba') }}" class="border rounded-lg shadow-md bg-white overflow-hidden w-full h-80 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
+            <img src="{{ pet.image_url }}" alt="Pet Image" class="w-full h-48 object-cover">
+            <div class="p-4">
+              <h3 class="text-lg font-bold"> {{ pet.name }} </h3>
+              <p class="text-sm text-gray-600">
+                {{ pet.age }} | {{ pet.gender }}<br>
+                {{ pet.breed }} <br>
+                {{ pet.location }}
+              </p>
+            </div>
+            <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
+              ❤️
+            </button>
+          </a>
         {% endfor %}
-    </ul>
-    <a href="{{ url_for('index') }}">Go Back Home</a>
+      </div>
 </body>
 </html>

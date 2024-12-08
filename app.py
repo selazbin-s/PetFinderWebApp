@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from pyswip import Prolog
 import requests
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
@@ -127,8 +128,9 @@ def results():
     # Query pets within 20 miles of the provided zip code
     # pets = query_pets_from_api(exerciseNeeds, isYardRequired, zipcode)
     pets = query_pets_from_api(zipcode)
-
-    return render_template('results.html', recommended_pet=pet_type, pets=pets)
+    first_pet = pets[0] if pets else None
+ 
+    return render_template('results.html', recommended_pet=pet_type, pets=pets, first_pet=first_pet)
 
 @app.route('/browse', methods=['GET'])
 def browse():
@@ -150,13 +152,6 @@ def browse():
                            breed_list=breed_list,
                            age_list=age_list,
                            pets=filtered_pets)
-
-# Will Implement later when we have dataset avaiable
-# @app.route('/pet/<int:pet_id>')
-# def pet_profile(pet_id):
-#     # Placeholder: fetch pet details from database
-#     pet = {'id': pet_id, 'name': 'Max', 'species': 'Dog', 'breed': 'Labrador', 'age': 'Puppy'}
-#     return render_template('pet_profile.html', pet=pet)
 
 @app.route('/pet')
 def profile():
@@ -192,14 +187,23 @@ def query_pets_from_api(zipcode):
         data = {'data': []}
 
     pets = []
+
     for animal in data.get('data', []):
         attributes = animal.get('attributes', {})
+        description_html = attributes.get('descriptionHtml', 'No description available')
+
+        soup = BeautifulSoup(description_html, 'html.parser')
+        # Extract plain text (No HTML tags)
+        description = soup.get_text().strip()
+        
         pets.append({
             'name': attributes.get('name', 'Unknown name'),
             'breed': attributes.get('breedPrimary', 'Unknown breed'),
             'age': attributes.get('ageGroup', 'Unknown age'),
+            'gender': attributes.get('gender', 'Unknown gender'),
             'foundPostalcode': attributes.get('foundPostalcode', 'Unknown location'),
-            'description': attributes.get('descriptionHtml', 'No description available')
+            'description': description,
+            'image_url': attributes.get('pictureThumbnailUrl', 'No image available')
         })
 
     return pets
