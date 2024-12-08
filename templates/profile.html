@@ -22,6 +22,49 @@
         </button>
     </nav>
 
-    Pet Porfiles
+     <!-- Pet Profile Section -->
+     <div class="max-w-5xl mx-auto mt-10 p-6 bg-white">
+        <div class="flex flex-col md:flex-row md:space-x-8">
+            <!-- Pet Image -->
+            <div class="flex-shrink-0">
+                <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full md:w-80 h-80 object-cover rounded-md shadow-md">
+            </div>
+            <!-- Pet Details -->
+            <div class="flex-grow">
+                <h1 class="text-4xl font-bold mb-2">Boba</h1>
+                <p class="text-gray-600 mb-4">Adult | Male | Golden Retriever | 1 mile away</p>
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <span class="px-4 py-2 bg-gray-100 border border-gray-400 rounded-2xl text-sm">Neutered</span>
+                    <span class="px-4 py-2 bg-gray-100 border border-gray-400 rounded-2xl text-sm">Playful</span>
+                    <span class="px-4 py-2 bg-gray-100 border border-gray-400 rounded-2xl text-sm">Calm</span>
+                    <span class="px-4 py-2 bg-gray-100 border border-gray-400 rounded-2xl text-sm">Microchipped</span>
+                    <span class="px-4 py-2 bg-gray-100 border border-gray-400 rounded-2xl text-sm">Fully Vaccinated</span>
+                </div>
+                <p class="text-gray-700 leading-relaxed mb-6">"Meet Boba, a friendly 3-year-old Domestic Shorthair who loves cuddles and sunny naps. 
+                    Neutered, vaccinated, and ready for a calm, loving home, Boba is here!"</p>
+                <button class="px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600">
+                    Adopt Now
+                </button>
+            </div>
+        </div>
+
+        <!-- Care Needs & Adoption Process -->
+        <div class="mt-8 bg-gray-100 p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-4">Care Needs</h2>
+            <p class="text-gray-700 leading-relaxed mb-6">
+                Boba requires daily exercise, including walks and playtime, to maintain his energy levels. He thrives in a home with a yard or with an active owner who enjoys outdoor adventures. He is house-trained and loves learning new tricks, making him a great companion for families or individuals looking for a loyal and playful pet.
+            </p>
+
+            <h2 class="text-2xl font-bold mb-4">Adoption Process</h2>
+            <p class="text-gray-700 leading-relaxed">
+                Interested in adopting Boba? Here’s how:
+                <ul class="list-disc pl-5 mt-2">
+                    <li>Click the "Adopt Now" button to fill out an adoption application.</li>
+                    <li>Our team will contact you to schedule a meet-and-greet with Boba.</li>
+                    <li>After the meet-and-greet, complete the adoption process, including a $150 adoption fee, which covers vaccinations, neutering, and microchipping.</li>
+                </ul>
+            </p>
+        </div>
+    </div>
 </body>
 </html>

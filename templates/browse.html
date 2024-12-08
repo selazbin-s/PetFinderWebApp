@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-white text-gray-800 font-sans">
+
     <!-- Navbar -->
     <nav class="flex justify-between items-center px-32 py-4 border-b border-gray-200">
         <h1 class="text-xl font-bold">PurrfectMatch</h1>
@@ -17,19 +18,18 @@
             <li><a href="#" class="hover:underline">Pet Care Guide</a></li>
             <li><a href="#" class="hover:underline">About Us</a></li>
         </ul>
-        <button class="border border-gray-800 rounded-lg px-4 py-2 hover:bg-gray-100">
-            Login
-        </button>
+        <button class="border border-gray-800 rounded-lg px-4 py-2 hover:bg-gray-100">Login</button>
     </nav>
 
     <!-- Page Title -->
     <div class="px-8 py-6">
-        <h1 class="text-4xl font-bold text-center md:text-left">Browse Pets</h1>
+        <h1 class="text-4xl font-bold text-center md:text-left px-32">Browse Pets</h1>
     </div>
 
-    <div class="flex flex-wrap gap-6 px-8 sm:flex-col">
+    <!-- Main Layout for Sidebar and Pet Cards -->
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 px-8 justify-start">
         <!-- Sidebar Filters -->
-        <div class="w-full md:w-1/3 p-6 bg-gray-50 rounded-lg shadow-md">
+        <div class="w-full md:w-1/4 bg-gray-50 p-4 rounded-lg shadow-md">
             <h2 class="text-xl font-bold mb-4">Filter by:</h2>
             <form method="GET" action="/browse" class="space-y-4">
                 <div>
@@ -62,196 +62,76 @@
             </form>
         </div>
 
-        <!-- Main Pet Content -->
-        <div class="md:w-2/3 p-6 bg-white rounded-lg shadow-md grid grid-cols-4 gap-32">
-            <div>
-                <a href="{{ url_for( 'profile', pet_id = Boba) }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-                    <div class="border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center">
-                        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                          <h3 class="text-lg font-bold">Boba</h3>
-                          <p class="text-sm text-gray-600">
-                            Adult | Male<br>
-                            Golden Retriever<br>
-                            1 mile away
-                          </p>
-                        </div>
-                        <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-                          ❤️
-                        </button>
-                      </div>
-                </a>                  
-            </div>
+        <!-- Pet Profiles Section -->
+        <div class="w-full md:w-3/4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
-            <div>
-                <a href="{{ url_for( 'profile', pet_id = Boba) }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-                    <div class="border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center">
-                        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                          <h3 class="text-lg font-bold">Boba</h3>
-                          <p class="text-sm text-gray-600">
+                <!-- Pet Card -->
+                <a href="{{ url_for('profile') }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden w-50 bg-white hover:shadow-lg transition transform hover:-translate-y-1">
+                    <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba" class="w-full h-40 object-cover">
+                    <div class="flex flex-col text-center p-4">
+                        <h3 class="text-lg font-bold">Boba</h3>
+                        <p class="text-sm text-gray-600">
                             Adult | Male<br>
                             Golden Retriever<br>
                             1 mile away
-                          </p>
-                        </div>
-                        <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-                          ❤️
-                        </button>
-                      </div>
-                </a>                  
-            </div>
+                        </p>
+                    </div>
+                    <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">❤️</button>
+                </a>
 
-            <div>
-                <a href="{{ url_for( 'profile', pet_id = Boba) }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-                    <div class="border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center">
-                        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                          <h3 class="text-lg font-bold">Boba</h3>
-                          <p class="text-sm text-gray-600">
+                <a href="{{ url_for('profile') }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden w-50 bg-white hover:shadow-lg transition transform hover:-translate-y-1">
+                    <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba" class="w-full h-40 object-cover">
+                    <div class="flex flex-col text-center p-4">
+                        <h3 class="text-lg font-bold">Boba</h3>
+                        <p class="text-sm text-gray-600">
                             Adult | Male<br>
                             Golden Retriever<br>
                             1 mile away
-                          </p>
-                        </div>
-                        <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-                          ❤️
-                        </button>
-                      </div>
-                </a>                  
-            </div>
+                        </p>
+                    </div>
+                    <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">❤️</button>
+                </a>
 
-            <div>
-                <a href="{{ url_for( 'profile', pet_id = Boba) }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-                    <div class="border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center">
-                        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                          <h3 class="text-lg font-bold">Boba</h3>
-                          <p class="text-sm text-gray-600">
-                            Adult | Male<br>
-                            Golden Retriever<br>
-                            1 mile away
-                          </p>
-                        </div>
-                        <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-                          ❤️
-                        </button>
-                      </div>
-                </a>                  
-            </div>
+                <a href="{{ url_for('profile') }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden w-50 bg-white hover:shadow-lg transition transform hover:-translate-y-1">
+                  <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba" class="w-full h-40 object-cover">
+                  <div class="flex flex-col text-center p-4">
+                      <h3 class="text-lg font-bold">Boba</h3>
+                      <p class="text-sm text-gray-600">
+                          Adult | Male<br>
+                          Golden Retriever<br>
+                          1 mile away
+                      </p>
+                  </div>
+                  <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">❤️</button>
+                </a>
 
-            <div>
-                <a href="{{ url_for( 'profile', pet_id = Boba) }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-                    <div class="border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center">
-                        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                          <h3 class="text-lg font-bold">Boba</h3>
-                          <p class="text-sm text-gray-600">
-                            Adult | Male<br>
-                            Golden Retriever<br>
-                            1 mile away
-                          </p>
-                        </div>
-                        <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-                          ❤️
-                        </button>
-                      </div>
-                </a>                  
-            </div>
+                <a href="{{ url_for('profile') }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden w-50 bg-white hover:shadow-lg transition transform hover:-translate-y-1">
+                  <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba" class="w-full h-40 object-cover">
+                  <div class="flex flex-col text-center p-4">
+                      <h3 class="text-lg font-bold">Boba</h3>
+                      <p class="text-sm text-gray-600">
+                          Adult | Male<br>
+                          Golden Retriever<br>
+                          1 mile away
+                      </p>
+                  </div>
+                  <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">❤️</button>
+                </a>
 
-            <div>
-                <a href="{{ url_for( 'profile', pet_id = Boba) }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-                    <div class="border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center">
-                        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                          <h3 class="text-lg font-bold">Boba</h3>
-                          <p class="text-sm text-gray-600">
-                            Adult | Male<br>
-                            Golden Retriever<br>
-                            1 mile away
-                          </p>
-                        </div>
-                        <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-                          ❤️
-                        </button>
-                      </div>
-                </a>                  
-            </div>
+                <a href="{{ url_for('profile') }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden w-50 bg-white hover:shadow-lg transition transform hover:-translate-y-1">
+                  <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba" class="w-full h-40 object-cover">
+                  <div class="flex flex-col text-center p-4">
+                      <h3 class="text-lg font-bold">Boba</h3>
+                      <p class="text-sm text-gray-600">
+                          Adult | Male<br>
+                          Golden Retriever<br>
+                          1 mile away
+                      </p>
+                  </div>
+                  <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">❤️</button>
+              </a>
 
-            <div>
-                <a href="{{ url_for( 'profile', pet_id = Boba) }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-                    <div class="border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center">
-                        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                          <h3 class="text-lg font-bold">Boba</h3>
-                          <p class="text-sm text-gray-600">
-                            Adult | Male<br>
-                            Golden Retriever<br>
-                            1 mile away
-                          </p>
-                        </div>
-                        <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-                          ❤️
-                        </button>
-                      </div>
-                </a>                  
-            </div>
-
-            <div>
-                <a href="{{ url_for( 'profile', pet_id = Boba) }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-                    <div class="border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center">
-                        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                          <h3 class="text-lg font-bold">Boba</h3>
-                          <p class="text-sm text-gray-600">
-                            Adult | Male<br>
-                            Golden Retriever<br>
-                            1 mile away
-                          </p>
-                        </div>
-                        <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-                          ❤️
-                        </button>
-                      </div>
-                </a>                  
-            </div>
-
-            <div>
-                <a href="{{ url_for( 'profile', pet_id = Boba) }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-                    <div class="border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center">
-                        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                          <h3 class="text-lg font-bold">Boba</h3>
-                          <p class="text-sm text-gray-600">
-                            Adult | Male<br>
-                            Golden Retriever<br>
-                            1 mile away
-                          </p>
-                        </div>
-                        <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-                          ❤️
-                        </button>
-                      </div>
-                </a>                  
-            </div>
-
-            <div>
-                <a href="{{ url_for( 'profile', pet_id = Boba) }}" class="flex flex-col justify-between border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
-                    <div class="border rounded-lg shadow-md overflow-hidden bg-white relative w-60 text-center">
-                        <img src="{{ url_for('static', filename='images/boba.jpg') }}" alt="Boba the cat" class="w-full h-40 object-cover">
-                        <div class="p-4">
-                          <h3 class="text-lg font-bold">Boba</h3>
-                          <p class="text-sm text-gray-600">
-                            Adult | Male<br>
-                            Golden Retriever<br>
-                            1 mile away
-                          </p>
-                        </div>
-                        <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">
-                          ❤️
-                        </button>
-                      </div>
-                </a>                  
             </div>
         </div>
     </div>
