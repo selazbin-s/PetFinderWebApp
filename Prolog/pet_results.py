@@ -4,50 +4,62 @@ from pyswip import Prolog
 prolog = Prolog()
 prolog.consult("C:/Users/happy/Desktop/PetFinderWebApp/Prolog/pet_traits.pl")
 
-def query_pet_match(adopter_traits):
-    # Map dictionary keys
-    trait_mapping = {
-        "energy": "adopter_energy",
-        "exercise": "adopter_exercise",
-        "training": "adopter_training",
-        "yard": "adopter_yard",
-        "grooming": "adopter_grooming",
-        "vocal": "adopter_vocal",
-        "shedding": "adopter_shedding",
-        "kids": "adopter_kids",
-        "seniors": "adopter_seniors"
+
+# Function to map user responses to Prolog facts dynamically
+def assert_traits(user_responses):
+    for key, value in user_responses.items():
+        # Dynamically assert user response into the Prolog database
+        prolog.assertz(f"{key}(adopter, {value})")
+
+
+# Example: Collect responses from the user
+def ask_questions():
+    print("Answer the following questions to find your ideal pet!")
+    
+    # Ask situational/behavioral questions and map the answers
+    energy_response = input("How much time do you spend exercising each week? (high/moderate/low): ")
+    exercise_response = input("Do you enjoy working out? (yes/no): ")
+    allergies_response = input("Do you have allergies? (yes/no): ")
+    yard_response = input("Do you have a yard? (yes/no): ")
+    noise_tolerance = input("Do you like environments with quiteness or lots of noise? (quiet/moderate/lots): ")
+    senior_response = input("Do you have elderly people in the house? (yes/no): ")
+    training_response = input("Do you stay home a lot or not? (yes/no): ")
+    
+    # Map responses to Prolog traits
+    user_responses = {
+        "adopter_energy": energy_response,
+        "adopter_exercise": exercise_response,
+        "adopter_allergies": allergies_response,
+        "adopter_yard": yard_response,
+        "adopter_vocalLevel": noise_tolerance,
+        "adopter_age": senior_response,
+        "adopter_training": training_response,
+        
     }
 
-
-    # Dynamically assert traits into the Prolog database
-    for key, value in adopter_traits.items():
-        if key in trait_mapping:
-            prolog.assertz(f"{trait_mapping[key]}(adopter, {value})")  # Dynamically insert facts
+    # Dynamically assert these traits into Prolog
+    assert_traits(user_responses)
 
 
+# Query Prolog to determine ideal pet match
+def query_pet_match():
     results = prolog.query("pet_match(adopter, Pet)")
-   
     matched_pets = []
     for result in results:
         matched_pets.append(result["Pet"])
-
-
     return matched_pets
 
 
-# Dynamically collect user traits
-adopter_traits = {}
-adopter_traits['energy'] = input("Enter energy level (high/moderate/low): ")
-adopter_traits['exercise'] = input("Enter exercise needs (high/moderate/low/not required): ")
-adopter_traits['training'] = input("Enter training level (needs_training/has_basic_training/well_trained): ")
-adopter_traits['yard'] = input("Do you have a yard? (yes/no): ")
-adopter_traits['grooming'] = input("Are you okay taking the pet for grooming? (yes_grooming/no_grooming): ")
-adopter_traits['vocal'] = input("What is your preferred vocal level for the pet? (quiet/some/lots): ")
-adopter_traits['shedding'] = input("How much shedding are you okay with? (none/moderate/high): ")
-adopter_traits['kids'] = input("Do you have or expect kids? (yes/no): ")
-adopter_traits['seniors'] = input("Do you senior people living with you? (yes/no): ")
+def main():
+    ask_questions()
+    
+    result = query_pet_match()
+    
+    print("The pet you should adopt is: ", result)
 
 
-# Call the function to query the best pet match
-pet_match = query_pet_match(adopter_traits)
-print(f"Best matched pets: {pet_match}")
+if __name__ == "__main__":
+    main()
+
+
+

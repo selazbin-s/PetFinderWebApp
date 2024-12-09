@@ -1,105 +1,77 @@
-:- discontiguous pet_match/2. % line to say its fine to define rules in different sections
+% Rule 1 - more exercise + energy
 
-% Pet Traits 
+pet_match(Adopter, dog) :-
+    adopter_energy(Adopter, high), adopter_exercise(Adopter, high).
 
-% Energy levels
-pet_energy(dog, high).
-pet_energy(cat, moderate).
-pet_energy(rabbit, low).
-pet_energy(bird, low).
+% Rule 2 - low energy + grooming
+pet_match(Adopter, cat) :-
+    adopter_energy(Adopter, low), adopter_grooming(Adopter, low).
 
-% Grooming Needs
-pet_grooming(dog, high).
-pet_grooming(cat, low).
-pet_grooming(rabbit, low).
-pet_grooming(bird, low).
+% Rule 3 - more exercise + medium size 
+pet_match(Adopter, dog) :-
+    adopter_exercise(Adopter, high), adopter_size(Adopter, medium).
 
-% Exercise Needs
-pet_exercise(dog, high).
-pet_exercise(cat, moderate).
-pet_exercise(rabbit, moderate).
-pet_exercise(bird, low).
+% Rule 4 - low exercise + medium size 
+pet_match(Adopter, cat) :-
+    adopter_exercise(Adopter, moderate), adopter_size(Adopter, medium).
 
-% Vocals 
-pet_vocal(dog, some).
-pet_vocal(cat, quiet).
-pet_vocal(bird, lots).
-pet_vocal(rabbit, quiet).
+% Rule 5 - Seniors with cats + low energy
+pet_match(Adopter, cat) :-
+    adopter_age(Adopter, senior), adopter_energy(Adopter, low).
 
-% Shedding
-pet_shedding(dog, moderate).
-pet_shedding(cat, none).
-pet_shedding(bird, none).
-pet_shedding(rabbit, moderate).
+% Rule 6 - low energy + exercise 
+pet_match(Adopter, cat) :-
+    adopter_energy(Adopter, low), adopter_exercise(Adopter, low).
 
-% Training 
-pet_training(dog, needs_training).
-pet_training(cat, has_basic_training).
-pet_training(bird, well_trained).
-pet_training(rabbit, has_basic_training).
+% Rule 7 -good training 
+pet_match(Adopter, dog) :-
+    adopter_training(Adopter, has_basic_training).
 
-% Yard Needs 
-pet_yard(dog).
-pet_yard(cat).
-pet_yard(rabbit).
+% Rule 8 - Has yard 
+pet_match(Adopter, dog) :-
+    adopter_yard(Adopter).
 
-% Favorite Pet 
-pet_type(dog, dog).
-pet_type(cat, cat).
-pet_type(bird, bird).
-pet_type(rabbit, rabbit).
-
-% Size
-pet_size(dog, medium).
-pet_size(cat, medium).
-pet_size(bird, small).
-pet_size(rabbit, small).
+% Rule 9 - low grooming + shedding 
+pet_match(Adopter, cat) :-
+    adopter_grooming(Adopter, low), adopter_length(Adopter, short).
 
 
-% Rule 1 
-pet_match(Adopter, Pet) :-
-    adopter_energy(Adopter, Energy), pet_energy(Pet, Energy).
+% Rule 10 - high grooming + shedding 
+pet_match(Adopter, dog) :-
+    adopter_grooming(Adopter, high), adopter_length(Adopter, medium).
 
-% Rule 2 
-pet_match(Adopter, Pet) :- 
-    adopter_exercise(Adopter, Exercise), pet_exercise(Pet, Exercise).
+% Rule 11 - Seniors with dogs + high energy
+pet_match(Adopter, dog) :-
+    adopter_kid(Adopter, kids), adopter_energy(Adopter, high).
 
-%  Rule 3 
-pet_match(Adopter, Pet) :-
-    adopter_training(Adopter, Training), pet_training(Pet, Training).
-
-% Rule 4
-pet_match(Adopter, Pet) :-
-    adopter_yard(Adopter, _), pet_yard(Pet). 
-
-% Rule 6 
-pet_match(Adopter, Pet) :-
-    adopter_grooming(Adopter, no_grooming), pet_grooming(Pet, low).
-
-% Rule 7
-pet_match(Adopter, Pet) :-
-    adopter_grooming(Adopter, yes_grooming), pet_grooming(Pet, high).
-
-% Rule 8
-pet_match(Adopter, Pet) :-
-    adopter_vocal(Adopter, Vocal), pet_vocal(Pet, Vocal).
-
-% Rule 9
-pet_match(Adopter, Pet) :-
-    adopter_shedding(Adopter, Shedding), pet_shedding(Pet, Shedding).
-
-% Rule 10
-favorite_pet(AdopterChoice, Pet) :-
-    pet_type(Pet, AdopterChoice).
+% Rule 12 - Favorite choice
+pet_match(Adopter, dog) :-
+    adopter_favorite(Adopter, dog).
+pet_match(Adopter, cat) :-
+    adopter_favorite(Adopter, cat).
 
 
-% Rule 11 
-pet_match(Adopter, Pet) :-
-    adopter_kids(Adopter, yes), pet_size(Pet, medium).
+% Rule 13 - high exercise + likes dogs 
+pet_match(adopter, dog) :-
+    adopter_exercise(adopter, high), isDogsOk(adopter).
 
-% Rule 12
-pet_match(Adopter, Pet) :-
-    adopter_seniors(Adopter, yes), pet_size(Pet, small).
+% Rule 14 - low exercise + likes cats
+pet_match(adopter, cat) :-
+    adopter_exercise(adopter, low), isCatsOk(adopter).
+
+% Rule 15 - small size + no yard
+pet_match(Adopter, cat) :-
+    adopter_size(Adopter, small), not(adopter_yard(Adopter)).
+
+% Rule 16 - high vocal
+pet_match(Adopter, dog) :-
+    adopter_vocalLevel(Adopter, lots).
+
+
+% Rule 15 - Choose other if some other choices 
+pet_match(Adopter, other) :-
+    not(isDogsOk(Adopter)), not(iscatsOk(Adopter)).
+
 
 
 
