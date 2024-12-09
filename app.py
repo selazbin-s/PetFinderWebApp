@@ -18,8 +18,6 @@ prolog = Prolog()
 # Example Prolog rules (you can adjust these based on your logic)
 prolog.assertz("suitable_pet(dog) :- favorite_pet(dog), has_yard(true)")
 prolog.assertz("suitable_pet(cat) :- favorite_pet(cat), has_yard(false)")
-prolog.assertz("suitable_pet(fish) :- favorite_pet(fish)")
-prolog.assertz("suitable_pet(other) :- favorite_pet(other)")
 
 # Example Questions for the Quiz
 QUESTIONS = [
@@ -27,7 +25,7 @@ QUESTIONS = [
      'options': [
         {'id': 1, 'option': 'Cat'},
         {'id': 2, 'option': 'Dog'},
-        {'id': 3, 'option': 'Fish'},
+        {'id': 3, 'option': 'Bird'},
         {'id': 4, 'option': 'Other'}
     ]},
     {'id': 2, 'question': 'Where do you live?', 
@@ -85,10 +83,9 @@ def quiz(question_id):
             # No options, directly read text input (e.g., zip code)
             selected_option_text = request.form['option']
 
-        # Store the answer in session
         if 'answers' not in session:
             session['answers'] = {}
-        session['answers'][f'q{question_id}'] = selected_option_text.lower().strip()
+        session['answers'].update({f'q{question_id}': selected_option_text.lower()})
 
         return redirect(url_for('quiz', question_id=question_id + 1))
 
@@ -99,7 +96,7 @@ def results():
     answers = session.get('answers', {})
     favorite = answers.get('q1', 'other')
     living = answers.get('q2', 'other')
-    zipcode = answers.get('q3', '92701')  # Default if none provided
+    zipcode = answers.get('q3')  # Default if none provided
 
     # Assert facts into Prolog
     prolog.assertz(f"favorite_pet({favorite})")
@@ -112,20 +109,19 @@ def results():
 
     # Map pet_type to exerciseNeeds and isYardRequired for the API
     # Adjust logic as needed
-    if pet_type == 'dog':
-        exerciseNeeds = 'high'
-        isYardRequired = 'true'
-    elif pet_type == 'cat':
-        exerciseNeeds = 'low'
-        isYardRequired = 'false'
-    elif pet_type == 'fish':
-        exerciseNeeds = 'not_required'
-        isYardRequired = 'false'
-    else:
-        exerciseNeeds = 'not_required'
-        isYardRequired = 'false'
+    # if pet_type == 'dog':
+    #     exerciseNeeds = 'high'
+    #     isYardRequired = 'true'
+    # elif pet_type == 'cat':
+    #     exerciseNeeds = 'low'
+    #     isYardRequired = 'false'
+    # elif pet_type == 'fish':
+    #     exerciseNeeds = 'not_required'
+    #     isYardRequired = 'false'
+    # else:
+    #     exerciseNeeds = 'not_required'
+    #     isYardRequired = 'false'
 
-    # Query pets within 20 miles of the provided zip code
     # pets = query_pets_from_api(exerciseNeeds, isYardRequired, zipcode)
     pets = query_pets_from_api(zipcode)
     first_pet = pets[0] if pets else None
@@ -166,34 +162,61 @@ def query_pets_from_api(zipcode):
 
     # Minimal payload as per API requirements
     payload = {
-        "data": {
-            "filterRadius": {
-                "miles": 10,
-                "postalcode": str(zipcode)
-            }
-        }
+    "data": {
+        "filters": 
+    	[
+    		{
+    			"fieldName": "animals.breedPrimaryId",
+    			"operation": "equal",
+    			"criteria": "90"
+    		},
+    		{
+    			"fieldName": "animals.sizeGroup",
+    			"operation": "equal",
+    			"criteria": ["Small","Medium"]
+    		}
+    	],
+    	"filterProcessing": "1 and 2",
+        "filterRadius":
+        	{
+        		"miles": 100,
+        		"postalcode": zipcode
+        	}
+        
     }
+}
 
     try:
         # Log headers and payload for debugging
-        print("Headers:", headers)
-        print("Payload:", payload)
-
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         data = response.json()
     except requests.RequestException as e:
         print(f"Error querying the API: {e}")
-        data = {'data': []}
+        data = {'data': [], 'included': []}
+
+    # Create a mapping for location IDs to city names
+    location_mapping = {}
+    for included_item in data.get('included', []):
+        if included_item['type'] == 'locations':
+            location_id = included_item['id']
+            city = included_item.get('attributes', {}).get('city', 'Unknown city')
+            location_mapping[location_id] = city
 
     pets = []
 
     for animal in data.get('data', []):
         attributes = animal.get('attributes', {})
+        relationships = animal.get('relationships', {})
         description_html = attributes.get('descriptionHtml', 'No description available')
 
+        # Extract the location ID from relationships
+        location_data = relationships.get('locations', {}).get('data', [])
+        location_id = location_data[0]['id'] if location_data else None
+        city = location_mapping.get(location_id, 'Unknown city')
+
+        # Parse the HTML description
         soup = BeautifulSoup(description_html, 'html.parser')
-        # Extract plain text (No HTML tags)
         description = soup.get_text().strip()
         
         pets.append({
@@ -202,8 +225,10 @@ def query_pets_from_api(zipcode):
             'age': attributes.get('ageGroup', 'Unknown age'),
             'gender': attributes.get('gender', 'Unknown gender'),
             'foundPostalcode': attributes.get('foundPostalcode', 'Unknown location'),
+            'city': city,
             'description': description,
-            'image_url': attributes.get('pictureThumbnailUrl', 'No image available')
+            'image_url': attributes.get('pictureThumbnailUrl', 'No image available'),
+            'url': attributes.get('url', 'No URL available')
         })
 
     return pets
