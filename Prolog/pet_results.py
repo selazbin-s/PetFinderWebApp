@@ -1,65 +1,37 @@
 from pyswip import Prolog
 
-
+# Initialize Prolog
 prolog = Prolog()
-prolog.consult("C:/Users/happy/Desktop/PetFinderWebApp/Prolog/pet_traits.pl")
+prolog.consult("pet_traits.pl")  # Load the Prolog file
 
-
-# Function to map user responses to Prolog facts dynamically
-def assert_traits(user_responses):
-    for key, value in user_responses.items():
-        # Dynamically assert user response into the Prolog database
-        prolog.assertz(f"{key}(adopter, {value})")
-
-
-# Example: Collect responses from the user
-def ask_questions():
-    print("Answer the following questions to find your ideal pet!")
+# Function to test the main pet suggestion
+def test_pet_suggestion(energy, allergies, living, size, small_children, preference):
+    # Translate inputs
+    allergy_value = "allergies" if allergies.lower() == "yes" else "no_allergies"
+    children_status = "small_children" if small_children else "no_children"
     
-    # Ask situational/behavioral questions and map the answers
-    energy_response = input("How much time do you spend exercising each week? (high/moderate/low): ")
-    exercise_response = input("Do you enjoy working out? (yes/no): ")
-    allergies_response = input("Do you have allergies? (yes/no): ")
-    yard_response = input("Do you have a yard? (yes/no): ")
-    noise_tolerance = input("Do you like environments with quiteness or lots of noise? (quiet/moderate/lots): ")
-    senior_response = input("Do you have elderly people in the house? (yes/no): ")
-    training_response = input("Do you stay home a lot or not? (yes/no): ")
+    # Query Prolog for matching pets based on user preferences
+    query = f"user_pet(Pet, {allergy_value}, {children_status}, {preference}), pet(Pet, {energy}, _, {living}, {size})"
+    results = list(prolog.query(query))
     
-    # Map responses to Prolog traits
-    user_responses = {
-        "adopter_energy": energy_response,
-        "adopter_exercise": exercise_response,
-        "adopter_allergies": allergies_response,
-        "adopter_yard": yard_response,
-        "adopter_vocalLevel": noise_tolerance,
-        "adopter_age": senior_response,
-        "adopter_training": training_response,
-        
-    }
+    # Return results or a failure message
+    if results:
+        return [result["Pet"] for result in results]
+    else:
+        return "Sorry, no pets match your preferences."
 
-    # Dynamically assert these traits into Prolog
-    assert_traits(user_responses)
-
-
-# Query Prolog to determine ideal pet match
-def query_pet_match():
-    results = prolog.query("pet_match(adopter, Pet)")
-    matched_pets = []
-    for result in results:
-        matched_pets.append(result["Pet"])
-    return matched_pets
-
-
+# Test cases
 def main():
-    ask_questions()
+    print("Testing pet suggestions:")
     
-    result = query_pet_match()
+    # Test case 1: Preference for dogs, no allergies, no children
+    print("Test 1:", test_pet_suggestion("high_energy", "no", "house", "large", False, "dog_preference"))
     
-    print("The pet you should adopt is: ", result)
-
+    # Test case 2: Preference for cats, allergies, small children
+    print("Test 2:", test_pet_suggestion("neutral", "yes", "apartment", "small", True, "cat_preference"))
+    
+    # Test case 3: No preference, allergies, no children
+    print("Test 3:", test_pet_suggestion("calm", "yes", "house", "large", False, "no_preference"))
 
 if __name__ == "__main__":
     main()
-
-
-

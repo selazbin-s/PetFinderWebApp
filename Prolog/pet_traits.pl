@@ -1,79 +1,101 @@
-% Rule 1 - more exercise + energy
+% Facts about cats
+pet(cat1, calm, no_shed, apartment, small).
+pet(cat2, calm, no_shed, apartment, large).
+pet(cat3, calm, no_shed, house, small).
+pet(cat4, calm, no_shed, house, large).
+pet(cat5, calm, shed, apartment, small).
+pet(cat6, calm, shed, apartment, large).
+pet(cat7, calm, shed, house, small).
+pet(cat8, calm, shed, house, large).
 
-pet_match(Adopter, dog) :-
-    adopter_energy(Adopter, high), adopter_exercise(Adopter, high).
+pet(cat9, neutral, no_shed, apartment, small).
+pet(cat10, neutral, no_shed, apartment, large).
+pet(cat11, neutral, no_shed, house, small).
+pet(cat12, neutral, no_shed, house, large).
+pet(cat13, neutral, shed, apartment, small).
+pet(cat14, neutral, shed, apartment, large).
+pet(cat15, neutral, shed, house, small).
+pet(cat16, neutral, shed, house, large).
 
-% Rule 2 - low energy + grooming
-pet_match(Adopter, cat) :-
-    adopter_energy(Adopter, low), adopter_grooming(Adopter, low).
+pet(cat17, high_energy, no_shed, apartment, small).
+pet(cat18, high_energy, no_shed, apartment, large).
+pet(cat19, high_energy, no_shed, house, small).
+pet(cat20, high_energy, no_shed, house, large).
+pet(cat21, high_energy, shed, apartment, small).
+pet(cat22, high_energy, shed, apartment, large).
+pet(cat23, high_energy, shed, house, small).
+pet(cat24, high_energy, shed, house, large).
 
-% Rule 3 - more exercise + medium size 
-pet_match(Adopter, dog) :-
-    adopter_exercise(Adopter, high), adopter_size(Adopter, medium).
+% Facts about dogs
+pet(dog1, calm, no_shed, apartment, small).
+pet(dog2, calm, no_shed, apartment, large).
+pet(dog3, calm, no_shed, house, small).
+pet(dog4, calm, no_shed, house, large).
+pet(dog5, calm, shed, apartment, small).
+pet(dog6, calm, shed, apartment, large).
+pet(dog7, calm, shed, house, small).
+pet(dog8, calm, shed, house, large).
 
-% Rule 4 - low exercise + medium size 
-pet_match(Adopter, cat) :-
-    adopter_exercise(Adopter, moderate), adopter_size(Adopter, medium).
+pet(dog9, neutral, no_shed, apartment, small).
+pet(dog10, neutral, no_shed, apartment, large).
+pet(dog11, neutral, no_shed, house, small).
+pet(dog12, neutral, no_shed, house, large).
+pet(dog13, neutral, shed, apartment, small).
+pet(dog14, neutral, shed, apartment, large).
+pet(dog15, neutral, shed, house, small).
+pet(dog16, neutral, shed, house, large).
 
-% Rule 5 - Seniors with cats + low energy
-pet_match(Adopter, cat) :-
-    adopter_age(Adopter, senior), adopter_energy(Adopter, low).
+pet(dog17, high_energy, no_shed, apartment, small).
+pet(dog18, high_energy, no_shed, apartment, large).
+pet(dog19, high_energy, no_shed, house, small).
+pet(dog20, high_energy, no_shed, house, large).
+pet(dog21, high_energy, shed, apartment, small).
+pet(dog22, high_energy, shed, apartment, large).
+pet(dog23, high_energy, shed, house, small).
+pet(dog24, high_energy, shed, house, large).
 
-% Rule 6 - low energy + exercise 
-pet_match(Adopter, cat) :-
-    adopter_energy(Adopter, low), adopter_exercise(Adopter, low).
+% Derived rules
+small_pet(Pet) :- pet(Pet, _, _, _, small).
+large_pet(Pet) :- pet(Pet, _, _, _, large).
+low_energy_pet(Pet) :- pet(Pet, calm, _, _, _).
+high_energy_pet(Pet) :- pet(Pet, high_energy, _, _, _).
+allergy_friendly_pet(Pet) :- pet(Pet, _, no_shed, _, _).
 
-% Rule 7 -good training 
-pet_match(Adopter, dog) :-
-    adopter_training(Adopter, has_basic_training).
+% Rule: Ensure allergy-friendly pets are labeled as no_shed
+allergy_friendly_pet(Pet) :- pet(Pet, _, no_shed, _, _).
 
-% Rule 8 - Has yard 
-pet_match(Adopter, dog) :-
-    adopter_yard(Adopter).
+% Rule: Disallow large pets in apartments
+valid_pet(Pet) :-
+    pet(Pet, _, _, apartment, small).  % Allow small pets in apartments
+valid_pet(Pet) :-
+    pet(Pet, _, _, house, _).         % Allow all pets in houses
 
-% Rule 9 - low grooming + shedding 
-pet_match(Adopter, cat) :-
-    adopter_grooming(Adopter, low), adopter_length(Adopter, short).
+% Rule: Disallow large high-energy pets for families with small children
+family_friendly_pet(Pet, no_children) :- 
+    valid_pet(Pet).  % If no small children, defer to valid_pet/1
+family_friendly_pet(Pet, small_children) :- 
+    valid_pet(Pet),  % Must be valid first
+    \+ (pet(Pet, high_energy, _, _, large)).  % Exclude large high-energy pets
 
+% Rule: Ensure pets are valid and allergy-friendly if user has allergies
+user_pet(Pet, no_allergies, no_children, no_preference) :-
+    valid_pet(Pet), family_friendly_pet(Pet, no_children).
+user_pet(Pet, no_allergies, small_children, no_preference) :-
+    valid_pet(Pet), family_friendly_pet(Pet, small_children).
+user_pet(Pet, allergies, no_children, no_preference) :-
+    valid_pet(Pet), family_friendly_pet(Pet, no_children), allergy_friendly_pet(Pet).
+user_pet(Pet, allergies, small_children, no_preference) :-
+    valid_pet(Pet), family_friendly_pet(Pet, small_children), allergy_friendly_pet(Pet).
 
-% Rule 10 - high grooming + shedding 
-pet_match(Adopter, dog) :-
-    adopter_grooming(Adopter, high), adopter_length(Adopter, medium).
+% Rule: Handle user preferences for dogs, cats, or no preference
+user_pet(Pet, Allergies, Children, dog_preference) :-
+    valid_pet(Pet), family_friendly_pet(Pet, Children), pet(Pet, _, _, _, _), sub_atom(Pet, 0, _, _, dog), allergy_friendly_check(Allergies, Pet).
+user_pet(Pet, Allergies, Children, cat_preference) :-
+    valid_pet(Pet), family_friendly_pet(Pet, Children), pet(Pet, _, _, _, _), sub_atom(Pet, 0, _, _, cat), allergy_friendly_check(Allergies, Pet).
+user_pet(Pet, Allergies, Children, no_preference) :-
+    user_pet(Pet, Allergies, Children, dog_preference); user_pet(Pet, Allergies, Children, cat_preference).
 
-% Rule 11 - Seniors with dogs + high energy
-pet_match(Adopter, dog) :-
-    adopter_kid(Adopter, kids), adopter_energy(Adopter, high).
-
-% Rule 12 - Favorite choice
-pet_match(Adopter, dog) :-
-    adopter_favorite(Adopter, dog).
-pet_match(Adopter, cat) :-
-    adopter_favorite(Adopter, cat).
-
-
-% Rule 13 - high exercise + likes dogs 
-pet_match(adopter, dog) :-
-    adopter_exercise(adopter, high), isDogsOk(adopter).
-
-% Rule 14 - low exercise + likes cats
-pet_match(adopter, cat) :-
-    adopter_exercise(adopter, low), isCatsOk(adopter).
-
-% Rule 15 - small size + no yard
-pet_match(Adopter, cat) :-
-    adopter_size(Adopter, small), not(adopter_yard(Adopter)).
-
-% Rule 16 - high vocal
-pet_match(Adopter, dog) :-
-    adopter_vocalLevel(Adopter, lots).
-
-
-% Rule 15 - Choose other if some other choices 
-pet_match(Adopter, other) :-
-    not(isDogsOk(Adopter)), not(iscatsOk(Adopter)).
-
-
-
-
-
-
+% Rule: Helper to check allergy constraints
+allergy_friendly_check(allergies, Pet) :-
+    allergy_friendly_pet(Pet).
+allergy_friendly_check(no_allergies, _).
