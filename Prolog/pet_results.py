@@ -14,9 +14,12 @@ def test_pet_suggestion(energy, allergies, living, size, small_children, prefere
     query = f"user_pet(Pet, {allergy_value}, {children_status}, {preference}), pet(Pet, {energy}, _, {living}, {size})"
     results = list(prolog.query(query))
     
+    # Remove duplicates
+    unique_results = list({result["Pet"] for result in results})
+    
     # Return results or a failure message
-    if results:
-        return [result["Pet"] for result in results]
+    if unique_results:
+        return unique_results
     else:
         return "Sorry, no pets match your preferences."
 
