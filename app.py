@@ -15,33 +15,49 @@ RESCUEGROUPS_API_KEY = "SP1Mg1Jg"
 
 # Initialize Prolog
 prolog = Prolog()
-# Example Prolog rules (you can adjust these based on your logic)
-prolog.assertz("small_pet(cat)")
-prolog.assertz("small_pet(rabbit)")
-prolog.assertz("large_pet(dog)")
-prolog.assertz("large_pet(horse)")
-prolog.assertz("suitable_pet(X, small) :- small_pet(X)")
-prolog.assertz("suitable_pet(X, large) :- large_pet(X)")
-prolog.assertz("pet_suggestion(true, X) :- suitable_pet(X, small)")
-prolog.assertz("pet_suggestion(false, X) :- suitable_pet(X, large)")
+prolog.consult("Prolog/pet_traits.pl")  # Load the Prolog file
 
 # Example Questions for the Quiz
 QUESTIONS = [
-    {'id': 1, 'question': 'Do you have small children?',
+    {'id': 1, 'question': 'Would you consider yourself high_energy, neutral, or calm?',
+     'options': [
+        {'id': 1, 'option': 'high_energy'},
+        {'id': 2, 'option': 'neutral'},
+        {'id': 2, 'option': 'calm'}
+    ]},
+    {'id': 2, 'question': 'Do you or someone in your home have allergies?', 
      'options': [
         {'id': 1, 'option': 'Yes'},
-        {'id': 2, 'option': 'No'}
+        {'id': 2, 'option': 'No'},
     ]},
-    {'id': 2, 'question': 'Where do you live?', 
+    {'id': 3, 'question': 'Where do you live?', 
      'options': [
-        {'id': 1, 'option': 'Apartment'},
-        {'id': 2, 'option': 'House with Yard'},
-        {'id': 3, 'option': 'House without Yard'},
-        {'id': 4, 'option': 'Other'},
+        {'id': 1, 'option': 'apartment'},
+        {'id': 2, 'option': 'house'},
+        # {'id': 3, 'option': 'House without Yard'},
+        # {'id': 4, 'option': 'Other'},
     ]},
-    {'id': 3, 'question': 'What is your current Zip Code?',
-     'options': []  # No predefined options; user will type input
-    },
+    {'id': 4, 'question': 'size?', 
+     'options': [
+        {'id': 1, 'option': 'small'},
+        {'id': 2, 'option': 'large'},
+        # {'id': 3, 'option': 'House without Yard'},
+        # {'id': 4, 'option': 'Other'},
+    ]},         
+    {'id': 5, 'question': 'Do you have small children?', 
+     'options': [
+        {'id': 1, 'option': 'Yes'},
+        {'id': 2, 'option': 'No'},
+    ]}, 
+    {'id': 6, 'question': 'Do you have a preference for cats or dogs?', 
+     'options': [
+        {'id': 1, 'option': 'Cats'},
+        {'id': 2, 'option': 'Dogs'},
+        {'id': 2, 'option': 'No preference'},
+    ]},     
+    # {'id': 3, 'question': 'What is your current Zip Code?',
+    #  'options': []  # No predefined options; user will type input
+    # },
 ]
 
 class Todo(db.Model):
@@ -113,32 +129,60 @@ def quiz(question_id):
 
 @app.route('/results')
 def results():
+    # answers = session.get('answers', {})
+    # has_children_i = answers.get('q1')
+    # if has_children_i=='yes':
+    #     has_children=True
+    # else:
+    #     has_children=False
+    # living = answers.get('q2', 'other')
+    # zipcode = answers.get('q3')  # Default if none provided
+    # print("zipcode Answers:", answers.get('q3'))
+
+    # # Assert facts into Prolog
+    # result = list(prolog.query(f"pet_suggestion({str(has_children).lower()}, X)"))
+
+
+    # # Query Prolog
+    # #results_list = list(prolog.query("suitable_pet(X)"))
+    # pet_type_i = result[0]['X'] if result else "none"
+
+    # # pets = query_pets_from_api(exerciseNeeds, isYardRequired, zipcode)
+    # print(f"Pet type_i:  {pet_type_i}")
+
+    # if pet_type_i=='dog':
+    #     pet_type='Large'
+    # else:
+    #     pet_type='Small'
     answers = session.get('answers', {})
-    has_children_i = answers.get('q1')
-    if has_children_i=='yes':
-        has_children=True
+    energy = answers.get('q1')
+    allergies = answers.get('q2')
+    living = answers.get('q3')
+    size = answers.get('q4')
+    small_children = answers.get('q5')
+    pet_preference = answers.get('q6')
+
+    # Translate inputs
+    allergy_value = "allergies" if allergies.lower() == "yes" else "no_allergies"
+    children_status = "small_children" if small_children else "no_children"
+
+    # Query Prolog for matching pets based on user preferences
+    query = f"user_pet(Pet, {allergy_value}, {children_status}, {pet_preference}), pet(Pet, {energy}, _, {living}, {size})"
+    results = list(prolog.query(query))
+    
+    # Remove duplicates
+    unique_results = list({result["Pet"] for result in results})
+    
+    # Return results or a failure message
+    if unique_results:
+        for x in unique_results:
+            print(x)
     else:
-        has_children=False
-    living = answers.get('q2', 'other')
-    zipcode = answers.get('q3')  # Default if none provided
-    print("zipcode Answers:", answers.get('q3'))
-
-    # Assert facts into Prolog
-    result = list(prolog.query(f"pet_suggestion({str(has_children).lower()}, X)"))
-
-
-    # Query Prolog
-    #results_list = list(prolog.query("suitable_pet(X)"))
-    pet_type_i = result[0]['X'] if result else "none"
-
-    # pets = query_pets_from_api(exerciseNeeds, isYardRequired, zipcode)
-    print(f"Pet type_i:  {pet_type_i}")
-
-    if pet_type_i=='dog':
-        pet_type='Large'
-    else:
-        pet_type='Small'
-    pets = query_pets_from_api(pet_type,zipcode)
+        return "Sorry, no pets match your preferences."
+    
+    
+    pet_type='Small'
+    pets = query_pets_from_api(pet_type,'92701')
     
     first_pet = pets[0] if pets else None
  
