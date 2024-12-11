@@ -35,7 +35,7 @@
           <p class="text-gray-700"> {{ first_pet.breed }} </p>
           <p class="text-gray-700 mb-4"> {{ first_pet.city }} </p>
 
-          <p class="text-gray-700 mb-8"> {{ first_pet.description }} </p>
+          <p class="text-gray-700 mb-8"> {{ explanation }} </p>
 
           <a href="{{ url_for('profile', pet_id=first_pet.pet_id) }}" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-600">
             View Profile
@@ -49,7 +49,7 @@
     <h2 class="text-2xl font-bold mt-8 mb-4">Other Recommendations:</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {% for pet in pets %}
-          <a href="{{ url_for('profile', pet_id=first_pet.pet_id) }}" class="border rounded-lg shadow-md bg-white overflow-hidden w-full h-80 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
+          <a href="{{ url_for('profile', pet_id=pet.pet_id) }}" class="border rounded-lg shadow-md bg-white overflow-hidden w-full h-80 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
             <img src="{{ pet.image_url }}" alt="Pet Image" class="w-full h-48 object-cover">
             <div class="p-4">
               <h3 class="text-lg font-bold"> {{ pet.name }} </h3>
