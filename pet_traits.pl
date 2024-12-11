@@ -162,8 +162,8 @@ allergy_check(no_allergies, _).  % Allow all pets if no allergies
 
 % Check preference for animal
 preference_animal(_, no_preference).
-preference_animal(Pet, dog_preference) :- sub_atom(Pet, 0, _, _, dog).
-preference_animal(Pet, cat_preference) :- sub_atom(Pet, 0, _, _, cat).
+preference_animal(Pet, dog) :- atom_prefix(Pet, dog).
+preference_animal(Pet, cat) :- atom_prefix(Pet, cat).
 
 % If no yard then no high-energy dogs
 yard_check(_, yes).  % If the user has a yard, all pets are allowed
@@ -190,8 +190,12 @@ training_preference(_, willing).  % If the user is willing to train, no restrict
 training_preference(Pet, not_willing) :-
     \+ pet(Pet, _, _, _, _, no_trained).  % Exclude untrained pets if the user does not want to train
 
+% Energy level preference rule
+preference_energy(Pet, Energy) :-
+    pet(Pet, Energy, _, _, _, _).
+
 % Matches users with their perfect match
-user_pet(Pet, Allergies, Children, Preference, Living, Yard, Age, Experience, Training) :-
+user_pet(Pet, Allergies, Children, Preference, Living, Yard, Age, Experience, Training, Energy) :-
    house_size(Pet, Living),  % Match the pets size to the living environment
    family_friendly_pet(Pet, Children),  % Ensure family-friendliness
    children_baby(Pet, Children),  % Ensure age is safe for children
@@ -201,8 +205,10 @@ user_pet(Pet, Allergies, Children, Preference, Living, Yard, Age, Experience, Tr
    preference_age(Pet, Age),  % Match the pets age preference
    beginner_pet(Pet, Experience),  % Match beginner pet owner preferences
    training_preference(Pet, Training),  % Ensure the pet matches the users training willingness
+   preference_energy(Pet, Energy),
    % Write explanation to the output
    write("This pet is a great match because it meets the following criteria:\n"),
+   format("Pet: ~w\n", [Pet]),
    format("Allergies: ~w\n", [Allergies]),
    format("Children: ~w\n", [Children]),
    format("Preference: ~w\n", [Preference]),
@@ -210,51 +216,5 @@ user_pet(Pet, Allergies, Children, Preference, Living, Yard, Age, Experience, Tr
    format("Yard: ~w\n", [Yard]),
    format("Age: ~w\n", [Age]),
    format("Experience: ~w\n" , [Experience]),
-   format("Training Needed: ~w\n", [Training]).
-
-% Relaxed Training Preference
-user_pet(Pet, Allergies, Children, Preference, Living, Yard, Age, Experience, _) :-
-   house_size(Pet, Living),  % Match the pets size to the living environment
-   family_friendly_pet(Pet, Children),  % Ensure family-friendliness
-   children_baby(Pet, Children),  % Ensure age is safe for children
-   allergy_check(Allergies, Pet),  % Check allergy constraints
-   preference_animal(Pet, Preference),  % Match species preference
-   yard_check(Pet, Yard),  % Ensure suitability based on yard availability
-   preference_age(Pet, Age),  % Match the pets age preference
-   beginner_pet(Pet, Experience),  % Match beginner pet owner preferences
-   write("This pet is a great match because it meets the following criteria:\n"),
-   format("Allergies: ~w\n", [Allergies]),
-   format("Children: ~w\n", [Children]),
-   format("Preference: ~w\n", [Preference]),
-   format("Living: ~w\n", [Living]),
-   format("Yard: ~w\n", [Yard]),
-   format("Age: ~w\n", [Age]),
-   format("Experience: ~w\n" , [Experience]).
-
-% Relaxed Yard Requirement
-user_pet(Pet, Allergies, Children, Preference, Living, _, Age, Experience, _) :-
-    house_size(Pet, Living),
-    family_friendly_pet(Pet, Children),
-    allergy_check(Allergies, Pet),
-    preference_animal(Pet, Preference),
-    preference_age(Pet, Age),
-    beginner_pet(Pet, Experience),
-    write("This pet is a great match because it meets the following criteria:\n"),
-   format("Allergies: ~w\n", [Allergies]),
-   format("Children: ~w\n", [Children]),
-   format("Preference: ~w\n", [Preference]),
-   format("Living: ~w\n", [Living]),
-   format("Age: ~w\n", [Age]),
-   format("Experience: ~w\n" , [Experience]).
-
-% Even more relaxed option
-user_pet(Pet, Allergies, Children, _, Living, _, _, Experience, _) :-
-    house_size(Pet, Living),
-    family_friendly_pet(Pet, Children),
-    allergy_check(Allergies, Pet),
-    beginner_pet(Pet, Experience),
-    write("This pet is a great match because it meets the following criteria:\n"),
-   format("Allergies: ~w\n", [Allergies]),
-   format("Children: ~w\n", [Children]),
-   format("Living: ~w\n", [Living]),
-   format("Experience: ~w\n" , [Experience]).
+   format("Training Needed: ~w\n", [Training]),
+   format("Energy: ~w\n", [Energy]).
