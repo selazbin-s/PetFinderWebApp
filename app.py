@@ -4,6 +4,7 @@ from datetime import datetime
 from pyswip import Prolog
 import requests
 from bs4 import BeautifulSoup
+import subprocess
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
@@ -169,7 +170,16 @@ def results():
     # Query Prolog for matching pets based on user preferences
     query = (
     f"user_pet(Pet, {allergy_value}, {children_status}, {pet_preference}, {living}, _, _, _, _)"
-)
+    )
+
+    result = subprocess.run(
+        ["swipl", "-q", "-s", "pet_traits.pl", "-g", query, "-t", "halt"],
+        stdout=subprocess.PIPE,
+        text=True
+    )
+
+    # Capture the output from `write/1`
+    explanation = result.stdout.strip()
 
     results = list(prolog.query(query))
     
@@ -189,7 +199,7 @@ def results():
     
     first_pet = pets[0] if pets else None
  
-    return render_template('results.html', recommended_pet=pet_type, pets=pets, first_pet=first_pet)
+    return render_template('results.html', recommended_pet=pet_type, pets=pets, first_pet=first_pet, explanation=explanation, results=results)
 
 @app.route('/browse', methods=['GET'])
 def browse():
