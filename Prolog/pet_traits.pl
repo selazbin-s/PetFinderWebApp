@@ -159,13 +159,14 @@ allergy_check(no_allergies, _).  % Allow all pets if no allergies
 
 % Check preference for animal
 preference_animal(_, no_preference).
-preference_animal(Pet, dog_preference) :- sub_atom(Pet, 0, _, _, dog).
-preference_animal(Pet, cat_preference) :- sub_atom(Pet, 0, _, _, cat).
+preference_animal(Pet, dog) :- atom_prefix(Pet, dog).
+preference_animal(Pet, cat) :- atom_prefix(Pet, cat).
 
 % If no yard then no high-energy dogs
-yard_check(_, yes).  % If the user has a yard, all pets are allowed
+yard_check(_, yes).  % Allow all pets if theres a yard
 yard_check(Pet, no) :-
-    \+ (pet(Pet, high_energy, _, _, _, no_trained), sub_atom(Pet, 0, _, _, dog)).  % Exclude untrained, high-energy dogs if no yard
+    \+ pet(Pet, high_energy, _, _, _, no_trained).  % Exclude untrained high-energy pets
+
 
 % Check preference for age
 preference_age(_, no_preference).  % No preference for age
@@ -187,14 +188,22 @@ training_preference(_, willing).  % If the user is willing to train, no restrict
 training_preference(Pet, not_willing) :-
     \+ pet(Pet, _, _, _, _, no_trained).  % Exclude untrained pets if the user does not want to train
 
+% Energy level preference rule
+% Otherwise, the pets energy level must match the users preferred energy level.
+preference_energy(Pet, Energy) :-
+    pet(Pet, Energy, _, _, _, _).
+
 % User preferences
-user_pet(Pet, Allergies, Children, Preference, Living, Yard, Age, Experience, Training) :-
-    house_size(Pet, Living),  % Match the pets size to the living environment
-    family_friendly_pet(Pet, Children),  % Ensure family-friendliness
-    children_baby(Pet, Children),  % Ensure age is safe for children
-    allergy_check(Allergies, Pet),  % Check allergy constraints
-    preference_animal(Pet, Preference),  % Match species preference
-    yard_check(Pet, Yard),  % Ensure suitability based on yard availability
-    preference_age(Pet, Age),  % Match the pets age preference
-    beginner_pet(Pet, Experience),  % Match beginner pet owner preferences
-    training_preference(Pet, Training).  % Ensure the pet matches the users training willingness
+user_pet(Pet, Allergies, Children, Preference, Living, Yard, Age, Experience, Training, EnergyPref) :-
+    house_size(Pet, Living),
+    family_friendly_pet(Pet, Children),
+    children_baby(Pet, Children),
+    allergy_check(Allergies, Pet),
+    preference_animal(Pet, Preference),
+    yard_check(Pet, Yard),
+    preference_age(Pet, Age),
+    beginner_pet(Pet, Experience),
+    training_preference(Pet, Training),
+    preference_energy(Pet, EnergyPref).
+
+
