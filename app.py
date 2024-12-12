@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, redirect, jsonify, session
+from flask import Flask, render_template, url_for, request, redirect, jsonify, session, abort
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from pyswip import Prolog
@@ -18,7 +18,7 @@ RESCUEGROUPS_API_KEY = "SP1Mg1Jg"
 prolog = Prolog()
 prolog.consult("pet_traits.pl")  # Load the Prolog file
 
-# Example Questions for the Quiz
+# Questions for the Quiz
 QUESTIONS = [
     {'id': 1, 'question': 'Would you consider yourself high energy, calm, or somewhere in the middle?',
      'options': [
@@ -70,31 +70,10 @@ QUESTIONS = [
     },
 ]
 
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(200), nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return '<Task %r>' % self.id
-
 @app.route('/', methods=['POST', 'GET'])
 def index():
     session.clear() 
-    if request.method == 'POST':
-        task_content = request.form['content']
-        new_task = Todo(content=task_content)
-
-        try:
-            db.session.add(new_task)
-            db.session.commit()
-            return redirect('/')
-        except:
-            return 'There was an issue adding your task'
-
-    else:
-        tasks = Todo.query.order_by(Todo.date_created).all()
-        return render_template('index.html')
+    return render_template('index.html')
     
 @app.route('/quiz/<int:question_id>', methods=['GET', 'POST'])
 def quiz(question_id):
@@ -122,26 +101,19 @@ def quiz(question_id):
             session['answers'] = {}
 
         session['answers'].update({f'q{question_id}': selected_option_text.lower()})
-
         session.modified = True
-
-
-
-        # Debugging session after update
-
-        print("Session after update:", session.get('answers'))
 
         return redirect(url_for('quiz', question_id=question_id + 1))
 
     return render_template('quiz.html', question=current_question, total=len(QUESTIONS))
 
-
-
 @app.route('/results')
 def results():
 
-    ###formatting input answers for API
+    # Retrieve answers from the session
     answers = session.get('answers', {})
+
+    # Map and adjust terms for API input
     energy = answers.get('q1')
     if energy=="high energy":
         energy="high_energy"
@@ -151,43 +123,26 @@ def results():
         energy="neutral"
     
     allergies = answers.get('q2')
-    if allergies == "Yes":
-        allergy_value = "allergies"
-    else:
-        allergy_value="no_allergies"
+    allergy_value = "allergies" if allergies == "Yes" else "no_allergies"
 
     living = answers.get('q3')
     living=living.split()[0]
-    if living=="House with a Yard":
-        yard="yes"
-    else:
-        yard="no"
+    yard = "yes" if living == "House with a Yard" else "no"
 
     small_children = answers.get('q4')
-    if small_children == "yes":
-        children_status = "small_children"
-    else:
-        children_status = "no_children"
+    children_status = "small_children" if small_children == "yes" else "no_children"
 
     preference_animal = answers.get('q5')
-    if preference_animal=="no preference":
-        preference_animal="no_preference"
+    preference_animal = "no_preference" if preference_animal == "no preference" else preference_animal
 
     preference_age = answers.get('q6')
-    if preference_age=="no preference":
-        preference_age="no_preference"
+    preference_age = "no_preference" if preference_age == "no preference" else preference_age
 
     pet_experience = answers.get('q7')
-    if pet_experience=="Yes":
-        pet_experience="experienced"
-    else:
-        pet_experience="beginner"
+    pet_experience = "experienced" if pet_experience == "Yes" else "beginner"
     
     train_preference = answers.get('q8')
-    if train_preference=="no":
-        train_preference="not_willing"
-    else:
-        train_preference="willing"
+    train_preference = "not_willing" if train_preference == "no" else "willing"
 
     zipcode = answers.get('q9')
 
@@ -204,11 +159,15 @@ def results():
         text=True
     )
 
-    # Capture the output from `write/1`
+    # Capture and clean up the output produced by the Prolog `write/1` predicate
     explanation = result.stdout.strip()
     
+    # Execute the Prolog query and collect the results as a list of dictionaries
     results = list(prolog.query(query))
+
+    # Check if the query returned any results
     if results:
+        # Extract and process individual attributes from the first result
         pet_type=results[0]['Pet'][:3]
         temperment=results[0]['Temperament']
         shedding=results[0]['Shedding']
@@ -216,7 +175,6 @@ def results():
         age=results[0]['Age']
         training=results[0]['Training']
             
-
         print(f"pet({results[0]['Pet']}, {results[0]['Temperament']}, {results[0]['Shedding']}, {results[0]['Size']}, {results[0]['Age']}, {results[0]['Training']}).")
     else:
         print("Sorry, no pets match your preferences.")
@@ -248,11 +206,11 @@ def results():
 
     first_pet = pets[0] if pets else None
  
-    return render_template('results.html', recommended_pet=first_pet, pets=pets, first_pet=first_pet, explanation=explanation, results=results)
+    return render_template('results.html', pets=pets, first_pet=first_pet, explanation=explanation, results=results)
 
 @app.route('/browse', methods=['GET'])
 def browse():
-    # Example data
+    # List of filters
     species_list = ['Dog', 'Cat', 'Bird']
     age_list = ['Baby', 'Young Adult', 'Senior']
     
@@ -271,6 +229,17 @@ def browse():
     )
 
 def query_pets_from_api_general(species=None, age=None):
+    """
+    Queries the RescueGroups API for available pets based on specified criteria.
+
+    Args:
+        species (str): The species of the pet (e.g., "dog", "cat"). Defaults to None.
+        age (str): The age group of the pet (e.g., "Baby", "Adult"). Defaults to None.
+
+    Returns:
+        list: A list of dictionaries containing information about the pets.
+    """
+
     url = "https://api.rescuegroups.org/v5/public/animals/search/available/haspic"
     headers = {
         'Content-Type': 'application/vnd.api+json',
@@ -302,6 +271,7 @@ def query_pets_from_api_general(species=None, age=None):
         response.raise_for_status()
         data = response.json()
 
+        # Extract pet details from the API response
         pets = []
         for animal in data.get('data', []):
             attributes = animal.get('attributes', {})
@@ -322,10 +292,11 @@ def query_pets_from_api_general(species=None, age=None):
 
 @app.route('/pet/<pet_id>')
 def profile(pet_id):
+    # Fetch pet details from the API through pet_id
     pet = query_pet_by_id(pet_id)
 
     if not pet:
-        return render_template('error.html', message="Pet not found."), 404
+        abort(404, description="Pet not found.")
 
     return render_template('profile.html', pet=pet)
 
@@ -354,6 +325,7 @@ def clean_description(description):
     return description
 
 def query_pet_by_id(pet_id):
+    # Fetch pet details from the API using the pet_id
     url = f"https://api.rescuegroups.org/v5/public/animals/{pet_id}"
     headers = {
         'Content-Type': 'application/vnd.api+json',
@@ -361,13 +333,14 @@ def query_pet_by_id(pet_id):
     }
 
     try:
+        # Make a GET request to the API
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
 
         # Log API response for debugging
         print("API Response Data:", data)
-
+        
         pet_data = data.get('data')
         if isinstance(pet_data, list):
             # If data is a list, take the first element
@@ -414,7 +387,7 @@ def query_pet_by_id(pet_id):
         return None
 
 def generate_filter_string(x):
-
+  # Generate a filter string for the API
   filter_string = ""
   for i in range(1, x + 1):
     filter_string += str(i)
@@ -423,6 +396,8 @@ def generate_filter_string(x):
   return filter_string
 
 def query_pets_from_api(size, pet_type, shedding, age, training, temperment, zipcode):
+    # Fetch pets from the API matching the parameters
+
     url = "https://api.rescuegroups.org/v5/public/animals/search/available/haspic"
     headers = {
         'Content-Type': 'application/vnd.api+json',
