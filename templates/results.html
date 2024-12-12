@@ -48,7 +48,7 @@
     <!-- Other Recommendations -->
     <h2 class="text-2xl font-bold mt-8 mb-4">Other Recommendations:</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {% for pet in pets %}
+        {% for pet in pets[1:] %}
           <a href="{{ url_for('profile', pet_id=pet.pet_id) }}" class="border rounded-lg shadow-md bg-white overflow-hidden w-full h-80 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
             <img src="{{ pet.image_url }}" alt="Pet Image" class="w-full h-48 object-cover">
             <div class="p-4">
