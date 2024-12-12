@@ -207,14 +207,9 @@ user_pet(Pet, Allergies, Children, Preference, Living, Yard, Age, Experience, Tr
    training_preference(Pet, Training),  % Ensure the pet matches the users training willingness
    preference_energy(Pet, Energy),
    % Write explanation to the output
-   write("This pet is a great match because it meets the following criteria:\n"),
-   format("Pet: ~w\n", [Pet]),
-   format("Allergies: ~w\n", [Allergies]),
-   format("Children: ~w\n", [Children]),
-   format("Preference: ~w\n", [Preference]),
-   format("Living: ~w\n", [Living]),
-   format("Yard: ~w\n", [Yard]),
-   format("Age: ~w\n", [Age]),
-   format("Experience: ~w\n" , [Experience]),
-   format("Training Needed: ~w\n", [Training]),
-   format("Energy: ~w\n", [Energy]).
+   % Provide a detailed explanation of why this pet is a great match
+    write("This pet is a great match for you because it meets the following criteria: "),
+    format("The pet is compatible with your allergy requirements (~w) and is suitable for a household with ~w. ", [Allergies, Children]),
+    format("It aligns with your preference for a ~w, fits well in a ~w environment, and adapts to your yard availability (~w). ", [Preference, Living, Yard]),
+    format("This pet's age (~w) matches your preference, and it is well-suited for someone with your level of experience (~w). ", [Age, Experience]),
+    format("Furthermore, the pet's training needs (~w) align with your willingness to train, and its energy level (~w) is a perfect match for your lifestyle.", [Training, Energy]).

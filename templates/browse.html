@@ -41,14 +41,6 @@
                     </select>
                 </div>
                 <div>
-                    <label for="breed" class="block font-medium mb-1">Breed:</label>
-                    <select name="breed" id="breed" class="w-full border border-gray-300 rounded p-2">
-                        {% for breed in breed_list %}
-                            <option value="{{ breed }}">{{ breed }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
                     <label for="age" class="block font-medium mb-1">Age:</label>
                     <select name="age" id="age" class="w-full border border-gray-300 rounded p-2">
                         {% for age in age_list %}
@@ -74,7 +66,7 @@
                         <p class="text-sm text-gray-600">
                             {{ pet.age }} | {{ pet.gender }}<br>
                             {{ pet.breed }}<br>
-                            {{ pet.location }} <br>
+                            {{ pet.city }} <br>
                         </p>
                     </div>
                     <button class="absolute top-2 right-2 bg-white text-red-500 border border-gray-300 rounded-full shadow-sm p-2 hover:bg-red-100">❤️</button>
