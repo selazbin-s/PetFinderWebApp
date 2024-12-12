@@ -51,11 +51,11 @@ QUESTIONS = [
     {'id': 6, 'question': 'Do you have a preference animal age?', 
      'options': [
         {'id': 1, 'option': 'Baby'},
-        {'id': 2, 'option': 'Youth'},
+        {'id': 2, 'option': 'Young'},
         {'id': 3, 'option': 'Senior'},
         {'id': 4, 'option': 'No preference'},
     ]},      
-    {'id': 7, 'question': 'Have you cared for a pet before', 
+    {'id': 7, 'question': 'Have you cared for a pet before?', 
      'options': [
         {'id': 1, 'option': 'Yes'},
         {'id': 2, 'option': 'No'},
@@ -65,9 +65,9 @@ QUESTIONS = [
         {'id': 1, 'option': 'Yes'},
         {'id': 2, 'option': 'No'},
     ]},             
-    # {'id': 3, 'question': 'What is your current Zip Code?',
-    #  'options': []  # No predefined options; user will type input
-    # },
+    {'id': 9, 'question': 'What is your current Zip Code?',
+     'options': []  # No predefined options; user will type input
+    },
 ]
 
 class Todo(db.Model):
@@ -189,10 +189,14 @@ def results():
     else:
         train_preference="willing"
 
+    zipcode = answers.get('q9')
+
     # Query Prolog for matching pets based on user preferences
-    query = (
-    f"user_pet(Pet, {allergy_value}, {children_status}, {preference_animal}, {living}, {yard}, {preference_age}, {pet_experience}, {train_preference}, {energy})"
-    )
+    query = f"""
+        user_pet(Pet, {allergy_value}, {children_status}, {preference_animal}, {living}, {yard}, {preference_age}, {pet_experience}, {train_preference}, {energy}),
+        pet(Pet, Temperament, Shedding, Size, Age, Training),
+        PetFact = pet(Pet, Temperament, Shedding, Size, Age, Training), !.
+    """
 
     result = subprocess.run(
         ["swipl", "-q", "-s", "pet_traits.pl", "-g", query, "-t", "halt"],
@@ -202,23 +206,46 @@ def results():
 
     # Capture the output from `write/1`
     explanation = result.stdout.strip()
-
+    
     results = list(prolog.query(query))
-    
-    # Remove duplicates
-    unique_results = list({result["Pet"] for result in results})
-    
-    # Return results or a failure message
-    if unique_results:
-        for x in unique_results:
-            print(x)
+    if results:
+        pet_type=results[0]['Pet'][:3]
+        temperment=results[0]['Temperament']
+        shedding=results[0]['Shedding']
+        size=results[0]['Size']
+        age=results[0]['Age']
+        training=results[0]['Training']
+            
+
+        print(f"pet({results[0]['Pet']}, {results[0]['Temperament']}, {results[0]['Shedding']}, {results[0]['Size']}, {results[0]['Age']}, {results[0]['Training']}).")
     else:
-        return "Sorry, no pets match your preferences."
+        print("Sorry, no pets match your preferences.")
     
+    ###Adjust terms for API input
+    if pet_type=="cat":
+        temperment=None
+    elif temperment=="high_energy":
+        temperment="High"
+    elif temperment=="calm":
+        temperment="Low"
+    else:
+        temperment="Moderate"
+    if shedding=="no_shed":
+        shedding="Low"
+    else:
+        shedding=None
+    if train_preference=="not_willing":
+        training=True
+    else:
+        training=None
+    if size=="small":
+        size=["Small","Medium"]
+    else:
+        size=["Large","X-Large"]
     
-    pet_type='Small'
-    pets = query_pets_from_api(pet_type,'92701')
-    
+    print(f"pets = query_pets_from_api(size: {size}, pet_type: {pet_type}, temperment: {temperment}, shedding: {shedding}, age: {age}, training: {training}, '92701')")
+    pets = query_pets_from_api(size, pet_type, shedding, age, training, temperment, zipcode)
+
     first_pet = pets[0] if pets else None
  
     return render_template('results.html', recommended_pet=first_pet, pets=pets, first_pet=first_pet, explanation=explanation, results=results)
@@ -352,33 +379,52 @@ def query_pet_by_id(pet_id):
         print(f"Error querying the API: {e}")
         return None
 
-def query_pets_from_api(pet_type, zipcode):
+def generate_filter_string(x):
+
+  filter_string = ""
+  for i in range(1, x + 1):
+    filter_string += str(i)
+    if i < x:
+      filter_string += " AND "
+  return filter_string
+
+def query_pets_from_api(size, pet_type, shedding, age, training, temperment, zipcode):
     url = "https://api.rescuegroups.org/v5/public/animals/search/available/haspic"
     headers = {
         'Content-Type': 'application/vnd.api+json',
         'Authorization': RESCUEGROUPS_API_KEY
     }
 
-    # Minimal payload as per API requirements
+    # Build the filter payload dynamically based on available parameters
+    filters = []
+    if pet_type:
+        filters.append({"fieldName": "species.singular", "operation": "equals", "criteria": pet_type})
+    if age:
+        filters.append({"fieldName": "animals.ageGroup", "operation": "equal", "criteria": age})
+    if size:
+        filters.append({"fieldName": "animals.sizeGroup", "operation": "equal", "criteria": size})
+    if temperment:
+        filters.append({"fieldName": "animals.energyLevel", "operation": "equal", "criteria": temperment})
+    if shedding:
+        filters.append({"fieldName": "animals.groomingNeeds", "operation": "equal", "criteria": shedding})
+    if training:
+        filters.append({"fieldName": "animals.isHousetrained", "operation": "equal", "criteria": training})
+
+    for x in filters:
+        print(x)
+
+    filter_string = generate_filter_string(len(filters))
+
     payload = {
-    "data": {
-        "filters": 
-    	[
-    		{
-    			"fieldName": "animals.sizeGroup",
-    			"operation": "equal",
-    			"criteria": pet_type
-    		}
-    	],
-    	"filterProcessing": "1",
-        "filterRadius":
-        	{
-        		"miles": 100,
-        		"postalcode": zipcode
-        	}
-        
+        "data": {
+            "filters": filters,
+            "filterProcessing": filter_string,
+            "filterRadius": {
+                "miles": 1000,
+                "postalcode": zipcode
+            }
+        }
     }
-}
 
     try:
         # Log headers and payload for debugging
@@ -417,7 +463,7 @@ def query_pets_from_api(pet_type, zipcode):
             'name': attributes.get('name', 'Unknown name'),
             'breed': attributes.get('breedPrimary', 'Unknown breed'),
             'age': attributes.get('ageGroup', 'Unknown age'),
-            'gender': attributes.get('gender', 'Unknown gender'),
+            'gender': attributes.get('sex', 'Unknown gender'),
             'city': city,
             'description': description,
             'pet_id': animal.get('id', 'Unknown ID'),
