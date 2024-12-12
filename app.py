@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from pyswip import Prolog
 import requests
-from bs4 import BeautifulSoup
+import html
 import subprocess
 
 app = Flask(__name__)
@@ -253,27 +253,24 @@ def results():
 @app.route('/browse', methods=['GET'])
 def browse():
     # Example data
-    species_list = ['Dog', 'Cat', 'Rabbit']
-    breed_list = ['Labrador', 'Siamese', 'Rex']
-    age_list = ['Puppy', 'Kitten', 'Adult']
+    species_list = ['Dog', 'Cat', 'Bird']
+    age_list = ['Baby', 'Young Adult', 'Senior']
     
     # Capture filter parameters from the request
     selected_species = request.args.get('species')
-    selected_breed = request.args.get('breed')
     selected_age = request.args.get('age')
 
     # Fetch pets from the API based on filters
-    pets = query_pets_from_api_general(selected_species, selected_breed, selected_age)
+    pets = query_pets_from_api_general(selected_species, selected_age)
 
     return render_template(
         'browse.html',
         species_list=species_list,
-        breed_list=breed_list,
         age_list=age_list,
         pets=pets
     )
 
-def query_pets_from_api_general(species=None, breed=None, age=None):
+def query_pets_from_api_general(species=None, age=None):
     url = "https://api.rescuegroups.org/v5/public/animals/search/available/haspic"
     headers = {
         'Content-Type': 'application/vnd.api+json',
@@ -283,18 +280,22 @@ def query_pets_from_api_general(species=None, breed=None, age=None):
     # Build the filter payload dynamically based on available parameters
     filters = []
     if species:
-        filters.append({"fieldName": "animals.species", "operation": "equal", "criteria": species})
-    if breed:
-        filters.append({"fieldName": "animals.breedPrimary", "operation": "equal", "criteria": breed})
+        filters.append({"fieldName": "species.singular", "operation": "equals", "criteria": species})
     if age:
-        filters.append({"fieldName": "animals.ageGroup", "operation": "equal", "criteria": age})
+        filters.append({"fieldName": "animals.ageGroup", "operation": "equals", "criteria": age})
+
+    # Generate the `filterProcessing` string based on the number of filters
+    filter_processing = " AND ".join(str(i + 1) for i in range(len(filters)))
 
     payload = {
         "data": {
             "filters": filters,
-            "filterProcessing": "1"
+            "filterProcessing": filter_processing
         }
     }
+
+    # Debugging: Log the payload
+    print("Payload for API:", payload)
 
     try:
         response = requests.post(url, headers=headers, json=payload)
@@ -308,8 +309,8 @@ def query_pets_from_api_general(species=None, breed=None, age=None):
                 'name': attributes.get('name', 'Unknown name'),
                 'breed': attributes.get('breedPrimary', 'Unknown breed'),
                 'age': attributes.get('ageGroup', 'Unknown age'),
-                'gender': attributes.get('gender', 'Unknown gender'),
-                'location': attributes.get('citystate', 'Unknown location'),
+                'gender': attributes.get('sex', 'Unknown gender'),
+                'location': attributes.get('foundPostalCode', 'Unknown location'),
                 'image_url': attributes.get('pictureThumbnailUrl', 'No image available'),
                 'pet_id': animal.get('id', 'Unknown ID')
             })
@@ -327,6 +328,30 @@ def profile(pet_id):
         return render_template('error.html', message="Pet not found."), 404
 
     return render_template('profile.html', pet=pet)
+
+def clean_description(description):
+    """
+    Cleans and reformats the pet description text.
+    - Decodes HTML entities like &nbsp;.
+    - Adds logical paragraph breaks for readability.
+    """
+    if not description:
+        return "No description available."
+
+    # Decode HTML entities
+    description = html.unescape(description)
+
+    # Add paragraph breaks for logical separation (you can adjust these rules as needed)
+    description = description.replace("UPDATE:", "\n\nUPDATE:")
+    description = description.replace("Click here to", "\n\nClick here to")
+    description = description.replace("Original post:", "\n\nOriginal post:")
+    description = description.replace("&nbsp;", " ")
+
+    # Remove extra spaces and ensure proper formatting
+    description = " ".join(description.split())  # Remove excess whitespace
+    description = description.strip()  # Trim leading and trailing whitespace
+
+    return description
 
 def query_pet_by_id(pet_id):
     url = f"https://api.rescuegroups.org/v5/public/animals/{pet_id}"
@@ -357,22 +382,31 @@ def query_pet_by_id(pet_id):
             print("No attributes found for this pet.")
             return None
         
-        # Safely parse the description
-        description_html = attributes.get('description', '')
-        if description_html:
-            soup = BeautifulSoup(description_html, 'html.parser')
-            description = soup.get_text().strip()
-        else:
-            description = "No description available."
+        relationships = pet_data.get('relationships', {})
+
+        # Create a mapping for location IDs to city names
+        location_mapping = {}
+        for included_item in data.get('included', []):
+            if included_item['type'] == 'locations':
+                location_id = included_item['id']
+                city = included_item.get('attributes', {}).get('city', 'Unknown city')
+                location_mapping[location_id] = city
+
+        # Get the city from the location mapping        # Extract the location ID from relationships
+        location_data = relationships.get('locations', {}).get('data', [])
+        location_id = location_data[0]['id'] if location_data else None
+        city = location_mapping.get(location_id, 'Unknown city')
 
         return {
             'name': attributes.get('name', 'Unknown name'),
             'breed': attributes.get('breedPrimary', 'Unknown breed'),
             'age': attributes.get('ageGroup', 'Unknown age'),
-            'gender': attributes.get('gender', 'Unknown gender'),
-            'description': description,
+            'gender': attributes.get('sex', 'Unknown gender'),
+            'description': clean_description(attributes.get('descriptionText', 'Unknown description')),
             'pet_id': pet_data.get('id', 'Unknown ID'),
             'image_url': attributes.get('pictureThumbnailUrl', 'No image available'),
+            'city': city,
+            'vaccinations': attributes.get('isCurrentVaccinations', 'Unknown vaccinations'),
         }
 
     except requests.RequestException as e:
@@ -448,16 +482,11 @@ def query_pets_from_api(size, pet_type, shedding, age, training, temperment, zip
     for animal in data.get('data', []):
         attributes = animal.get('attributes', {})
         relationships = animal.get('relationships', {})
-        description_html = attributes.get('descriptionHtml', 'No description available')
 
         # Extract the location ID from relationships
         location_data = relationships.get('locations', {}).get('data', [])
         location_id = location_data[0]['id'] if location_data else None
         city = location_mapping.get(location_id, 'Unknown city')
-
-        # Parse the HTML description
-        soup = BeautifulSoup(description_html, 'html.parser')
-        description = soup.get_text().strip()
 
         pets.append({
             'name': attributes.get('name', 'Unknown name'),
@@ -465,7 +494,7 @@ def query_pets_from_api(size, pet_type, shedding, age, training, temperment, zip
             'age': attributes.get('ageGroup', 'Unknown age'),
             'gender': attributes.get('sex', 'Unknown gender'),
             'city': city,
-            'description': description,
+            'description': clean_description(attributes.get('descriptionText', 'Unknown description')),
             'pet_id': animal.get('id', 'Unknown ID'),
             'image_url': attributes.get('pictureThumbnailUrl', 'No image available'),
             'url': attributes.get('url', 'No URL available')
