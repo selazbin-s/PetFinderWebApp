@@ -28,16 +28,16 @@
     <section class="bg-gray-200 p-6 rounded-lg shadow-md">
       <h2 class="text-2xl font-bold mb-4">Your Purrfect Match is....</h2>
       <div class="flex items-start space-x-4">
-        <img src="{{ first_pet.image_url }}" alt="Your Purrfect Match" class="w-64 h-64 object-cover rounded-md">
+        <img src="{{ recommended_pet.image_url }}" alt="Your Purrfect Match" class="w-64 h-64 object-cover rounded-md">
         <div>
-          <h3 class="text-3xl font-bold"> {{ first_pet.name }} </h3>
-          <p class="text-gray-700"> {{ first_pet.age }} | {{ first_pet.gender }} </p>
-          <p class="text-gray-700"> {{ first_pet.breed }} </p>
-          <p class="text-gray-700 mb-4"> {{ first_pet.city }} </p>
+          <h3 class="text-3xl font-bold"> {{ recommended_pet.name }} </h3>
+          <p class="text-gray-700"> {{ recommended_pet.age }} | {{ recommended_pet.gender }} </p>
+          <p class="text-gray-700"> {{ recommended_pet.breed }} </p>
+          <p class="text-gray-700 mb-4"> {{ recommended_pet.city }} </p>
 
           <p class="text-gray-700 mb-8"> {{ explanation }} </p>
 
-          <a href="{{ url_for('profile', pet_id=first_pet.pet_id) }}" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-600">
+          <a href="{{ url_for('profile', pet_id=recommended_pet.pet_id) }}" class="bg-blue-500 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-600">
             View Profile
           </a>
         </div>
@@ -47,7 +47,7 @@
   
     <!-- Other Recommendations -->
     <h2 class="text-2xl font-bold mt-8 mb-4">Other Recommendations:</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {% for pet in pets %}
           <a href="{{ url_for('profile', pet_id=pet.pet_id) }}" class="border rounded-lg shadow-md bg-white overflow-hidden w-full h-80 text-center hover:shadow-lg hover:-translate-y-1 transition transform">
             <img src="{{ pet.image_url }}" alt="Pet Image" class="w-full h-48 object-cover">
@@ -64,6 +64,6 @@
             </button>
           </a>
         {% endfor %}
-      </div>
+    </div>
 </body>
 </html>
