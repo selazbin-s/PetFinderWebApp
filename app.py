@@ -20,45 +20,54 @@ prolog.consult("pet_traits.pl")  # Load the Prolog file
 
 # Example Questions for the Quiz
 QUESTIONS = [
-    {'id': 1, 'question': 'Would you consider yourself high_energy, neutral, or calm?',
+    {'id': 1, 'question': 'Would you consider yourself high energy, calm, or somewhere in the middle?',
      'options': [
-        {'id': 1, 'option': 'high_energy'},
-        {'id': 2, 'option': 'neutral'},
-        {'id': 2, 'option': 'calm'}
+        {'id': 1, 'option': 'High Energy'},
+        {'id': 2, 'option': 'Calm'},
+        {'id': 3, 'option': 'Neutral'}
     ]},
     {'id': 2, 'question': 'Do you or someone in your home have allergies?', 
      'options': [
         {'id': 1, 'option': 'Yes'},
         {'id': 2, 'option': 'No'},
     ]},
-    {'id': 3, 'question': 'Where do you live?', 
+    {'id': 3, 'question': 'What type of home do you have?', 
      'options': [
-        {'id': 1, 'option': 'apartment'},
-        {'id': 2, 'option': 'house'},
-        # {'id': 3, 'option': 'House without Yard'},
-        # {'id': 4, 'option': 'Other'},
-    ]},
-    {'id': 4, 'question': 'size?', 
-     'options': [
-        {'id': 1, 'option': 'small'},
-        {'id': 2, 'option': 'large'},
-        # {'id': 3, 'option': 'House without Yard'},
-        # {'id': 4, 'option': 'Other'},
-    ]},         
-    {'id': 5, 'question': 'Do you have small children?', 
+        {'id': 1, 'option': 'Apartment'},
+        {'id': 2, 'option': 'House with a Yard'},
+        {'id': 3, 'option': 'House without Yard'},
+    ]},   
+    {'id': 4, 'question': 'Do you have small children?', 
      'options': [
         {'id': 1, 'option': 'Yes'},
         {'id': 2, 'option': 'No'},
     ]}, 
-    {'id': 6, 'question': 'Do you have a preference for cats or dogs?', 
+    {'id': 5, 'question': 'Do you have a preference for cats or dogs?', 
      'options': [
-        {'id': 1, 'option': 'Cats'},
-        {'id': 2, 'option': 'Dogs'},
-        {'id': 2, 'option': 'No preference'},
-    ]},     
-    # {'id': 3, 'question': 'What is your current Zip Code?',
-    #  'options': []  # No predefined options; user will type input
-    # },
+        {'id': 1, 'option': 'Cat'},
+        {'id': 2, 'option': 'Dog'},
+        {'id': 3, 'option': 'No preference'},
+    ]},
+    {'id': 6, 'question': 'Do you have a preference animal age?', 
+     'options': [
+        {'id': 1, 'option': 'Baby'},
+        {'id': 2, 'option': 'Young'},
+        {'id': 3, 'option': 'Senior'},
+        {'id': 4, 'option': 'No preference'},
+    ]},      
+    {'id': 7, 'question': 'Have you cared for a pet before?', 
+     'options': [
+        {'id': 1, 'option': 'Yes'},
+        {'id': 2, 'option': 'No'},
+    ]}, 
+    {'id': 8, 'question': 'Are you willing to train a new animal?', 
+     'options': [
+        {'id': 1, 'option': 'Yes'},
+        {'id': 2, 'option': 'No'},
+    ]},             
+    {'id': 9, 'question': 'What is your current Zip Code?',
+     'options': []  # No predefined options; user will type input
+    },
 ]
 
 class Todo(db.Model):
@@ -130,47 +139,64 @@ def quiz(question_id):
 
 @app.route('/results')
 def results():
-    # answers = session.get('answers', {})
-    # has_children_i = answers.get('q1')
-    # if has_children_i=='yes':
-    #     has_children=True
-    # else:
-    #     has_children=False
-    # living = answers.get('q2', 'other')
-    # zipcode = answers.get('q3')  # Default if none provided
-    # print("zipcode Answers:", answers.get('q3'))
 
-    # # Assert facts into Prolog
-    # result = list(prolog.query(f"pet_suggestion({str(has_children).lower()}, X)"))
-
-
-    # # Query Prolog
-    # #results_list = list(prolog.query("suitable_pet(X)"))
-    # pet_type_i = result[0]['X'] if result else "none"
-
-    # # pets = query_pets_from_api(exerciseNeeds, isYardRequired, zipcode)
-    # print(f"Pet type_i:  {pet_type_i}")
-
-    # if pet_type_i=='dog':
-    #     pet_type='Large'
-    # else:
-    #     pet_type='Small'
+    ###formatting input answers for API
     answers = session.get('answers', {})
     energy = answers.get('q1')
+    if energy=="high energy":
+        energy="high_energy"
+    elif energy=="calm":
+        energy="calm"
+    else:
+        energy="neutral"
+    
     allergies = answers.get('q2')
-    living = answers.get('q3')
-    size = answers.get('q4')
-    small_children = answers.get('q5')
-    pet_preference = answers.get('q6')
+    if allergies == "Yes":
+        allergy_value = "allergies"
+    else:
+        allergy_value="no_allergies"
 
-    # Translate inputs
-    allergy_value = "allergies" if allergies.lower() == "yes" else "no_allergies"
-    children_status = "small_children" if small_children else "no_children"
+    living = answers.get('q3')
+    living=living.split()[0]
+    if living=="House with a Yard":
+        yard="yes"
+    else:
+        yard="no"
+
+    small_children = answers.get('q4')
+    if small_children == "yes":
+        children_status = "small_children"
+    else:
+        children_status = "no_children"
+
+    preference_animal = answers.get('q5')
+    if preference_animal=="no preference":
+        preference_animal="no_preference"
+
+    preference_age = answers.get('q6')
+    if preference_age=="no preference":
+        preference_age="no_preference"
+
+    pet_experience = answers.get('q7')
+    if pet_experience=="Yes":
+        pet_experience="experienced"
+    else:
+        pet_experience="beginner"
+    
+    train_preference = answers.get('q8')
+    if train_preference=="no":
+        train_preference="not_willing"
+    else:
+        train_preference="willing"
+
+    zipcode = answers.get('q9')
 
     # Query Prolog for matching pets based on user preferences
-    query = (
-    f"user_pet(Pet, {allergy_value}, {children_status}, {pet_preference}, {living}, _, _, _, _)"
-    )
+    query = f"""
+        user_pet(Pet, {allergy_value}, {children_status}, {preference_animal}, {living}, {yard}, {preference_age}, {pet_experience}, {train_preference}, {energy}),
+        pet(Pet, Temperament, Shedding, Size, Age, Training),
+        PetFact = pet(Pet, Temperament, Shedding, Size, Age, Training), !.
+    """
 
     result = subprocess.run(
         ["swipl", "-q", "-s", "pet_traits.pl", "-g", query, "-t", "halt"],
@@ -180,26 +206,49 @@ def results():
 
     # Capture the output from `write/1`
     explanation = result.stdout.strip()
-
+    
     results = list(prolog.query(query))
-    
-    # Remove duplicates
-    unique_results = list({result["Pet"] for result in results})
-    
-    # Return results or a failure message
-    if unique_results:
-        for x in unique_results:
-            print(x)
+    if results:
+        pet_type=results[0]['Pet'][:3]
+        temperment=results[0]['Temperament']
+        shedding=results[0]['Shedding']
+        size=results[0]['Size']
+        age=results[0]['Age']
+        training=results[0]['Training']
+            
+
+        print(f"pet({results[0]['Pet']}, {results[0]['Temperament']}, {results[0]['Shedding']}, {results[0]['Size']}, {results[0]['Age']}, {results[0]['Training']}).")
     else:
-        return "Sorry, no pets match your preferences."
+        print("Sorry, no pets match your preferences.")
     
+    ###Adjust terms for API input
+    if pet_type=="cat":
+        temperment=None
+    elif temperment=="high_energy":
+        temperment="High"
+    elif temperment=="calm":
+        temperment="Low"
+    else:
+        temperment="Moderate"
+    if shedding=="no_shed":
+        shedding="Low"
+    else:
+        shedding=None
+    if train_preference=="not_willing":
+        training=True
+    else:
+        training=None
+    if size=="small":
+        size=["Small","Medium"]
+    else:
+        size=["Large","X-Large"]
     
-    pet_type='Small'
-    pets = query_pets_from_api(pet_type,'92701')
-    
+    print(f"pets = query_pets_from_api(size: {size}, pet_type: {pet_type}, temperment: {temperment}, shedding: {shedding}, age: {age}, training: {training}, '92701')")
+    pets = query_pets_from_api(size, pet_type, shedding, age, training, temperment, zipcode)
+
     first_pet = pets[0] if pets else None
  
-    return render_template('results.html', recommended_pet=pet_type, pets=pets, first_pet=first_pet, explanation=explanation, results=results)
+    return render_template('results.html', recommended_pet=first_pet, pets=pets, first_pet=first_pet, explanation=explanation, results=results)
 
 @app.route('/browse', methods=['GET'])
 def browse():
@@ -330,33 +379,52 @@ def query_pet_by_id(pet_id):
         print(f"Error querying the API: {e}")
         return None
 
-def query_pets_from_api(pet_type, zipcode):
+def generate_filter_string(x):
+
+  filter_string = ""
+  for i in range(1, x + 1):
+    filter_string += str(i)
+    if i < x:
+      filter_string += " AND "
+  return filter_string
+
+def query_pets_from_api(size, pet_type, shedding, age, training, temperment, zipcode):
     url = "https://api.rescuegroups.org/v5/public/animals/search/available/haspic"
     headers = {
         'Content-Type': 'application/vnd.api+json',
         'Authorization': RESCUEGROUPS_API_KEY
     }
 
-    # Minimal payload as per API requirements
+    # Build the filter payload dynamically based on available parameters
+    filters = []
+    if pet_type:
+        filters.append({"fieldName": "species.singular", "operation": "equals", "criteria": pet_type})
+    if age:
+        filters.append({"fieldName": "animals.ageGroup", "operation": "equal", "criteria": age})
+    if size:
+        filters.append({"fieldName": "animals.sizeGroup", "operation": "equal", "criteria": size})
+    if temperment:
+        filters.append({"fieldName": "animals.energyLevel", "operation": "equal", "criteria": temperment})
+    if shedding:
+        filters.append({"fieldName": "animals.groomingNeeds", "operation": "equal", "criteria": shedding})
+    if training:
+        filters.append({"fieldName": "animals.isHousetrained", "operation": "equal", "criteria": training})
+
+    for x in filters:
+        print(x)
+
+    filter_string = generate_filter_string(len(filters))
+
     payload = {
-    "data": {
-        "filters": 
-    	[
-    		{
-    			"fieldName": "animals.sizeGroup",
-    			"operation": "equal",
-    			"criteria": pet_type
-    		}
-    	],
-    	"filterProcessing": "1",
-        "filterRadius":
-        	{
-        		"miles": 100,
-        		"postalcode": zipcode
-        	}
-        
+        "data": {
+            "filters": filters,
+            "filterProcessing": filter_string,
+            "filterRadius": {
+                "miles": 1000,
+                "postalcode": zipcode
+            }
+        }
     }
-}
 
     try:
         # Log headers and payload for debugging
@@ -395,7 +463,7 @@ def query_pets_from_api(pet_type, zipcode):
             'name': attributes.get('name', 'Unknown name'),
             'breed': attributes.get('breedPrimary', 'Unknown breed'),
             'age': attributes.get('ageGroup', 'Unknown age'),
-            'gender': attributes.get('gender', 'Unknown gender'),
+            'gender': attributes.get('sex', 'Unknown gender'),
             'city': city,
             'description': description,
             'pet_id': animal.get('id', 'Unknown ID'),
