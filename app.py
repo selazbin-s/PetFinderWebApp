@@ -2,9 +2,11 @@ from flask import Flask, render_template, url_for, request, redirect, jsonify, s
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from pyswip import Prolog
+from dotenv import load_dotenv
 import requests
 import html
 import subprocess
+import os
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
@@ -12,7 +14,8 @@ app.secret_key = "supersecretkey"  # For session usage
 db = SQLAlchemy(app)
 app.app_context().push()
 
-RESCUEGROUPS_API_KEY = "SP1Mg1Jg"
+load_dotenv()
+RESCUEGROUPS_API_KEY = os.getenv("API_KEY")
 
 # Initialize Prolog
 prolog = Prolog()
